@@ -181,12 +181,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8a122ac6220571f41bae283df55e4e1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  interactionDistance: 3
   cameraTransform: {fileID: 7772787519190723048}
+  interactionDistance: 3
+  manoDerecha: {fileID: 5143952719116520244}
+  manoIzquierda: {fileID: 6478224761420071552}
   itemLayer:
     serializedVersion: 2
     m_Bits: 128
-  handTransform: {fileID: 5143952719116520244}
+  mesaLayer:
+    serializedVersion: 2
+    m_Bits: 256
   pickupHintUI: {fileID: 0}
 --- !u!1 &1872877042217557519
 GameObject:

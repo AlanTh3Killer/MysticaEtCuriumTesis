@@ -10,6 +10,7 @@ TagManager:
   - ItemContenible
   - Item
   - Mesa
+  - Herramienta
   layers:
   - Default
   - TransparentFX

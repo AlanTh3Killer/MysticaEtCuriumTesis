@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 7897823667267702318}
   - component: {fileID: 6244720361267471898}
   - component: {fileID: 2196510382470374417}
-  - component: {fileID: 4542079834420452230}
-  m_Layer: 0
+  - component: {fileID: 2135853244608094750}
+  m_Layer: 8
   m_Name: MesaDeTrabajo
   m_TagString: Mesa
   m_Icon: {fileID: 0}
@@ -811,8 +811,8 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 304719676989296924}
   m_Mesh: {fileID: 0}
---- !u!64 &4542079834420452230
-MeshCollider:
+--- !u!65 &2135853244608094750
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -829,10 +829,9 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 0}
+  serializedVersion: 3
+  m_Size: {x: 3.1642451, y: 0.8671918, z: 2.1094968}
+  m_Center: {x: 0, y: 0.3085959, z: -0.00000011920929}
 --- !u!1 &7694665667603739628
 GameObject:
   m_ObjectHideFlags: 0
@@ -843,7 +842,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7096819345499395219}
   m_Layer: 0
-  m_Name: PuntoPonerObjeto
+  m_Name: PuntoColocacion
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
