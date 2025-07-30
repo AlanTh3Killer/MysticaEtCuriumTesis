@@ -11,6 +11,8 @@ TagManager:
   - Item
   - Mesa
   - Herramienta
+  - PuntoInspeccion
+  - PuntoEspecial
   layers:
   - Default
   - TransparentFX

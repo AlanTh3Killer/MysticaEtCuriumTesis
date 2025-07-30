@@ -16,13 +16,19 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 velocity;
     private bool isGrounded;
 
+    private ItemInteraction itemInteraction;
+
     void Start()
     {
         controller = GetComponent<CharacterController>();
+        itemInteraction = GetComponent<ItemInteraction>();
     }
 
     void Update()
     {
+        if (itemInteraction != null && itemInteraction.enModoInspeccion)
+            return;
+
         // Comprobar si está tocando el suelo
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
 

@@ -18,6 +18,7 @@ public class ItemInteraction : MonoBehaviour
     [Header("UI Feedback")]
     [SerializeField] private GameObject itemFeedbackUI;
     [SerializeField] private GameObject herramientaFeedbackUI;
+    [SerializeField] private GameObject iniciarInspeccionFeedbackUI;
 
     private GameObject objetoDetectado = null;
     private string tagDetectado = "";
@@ -25,12 +26,81 @@ public class ItemInteraction : MonoBehaviour
     private GameObject itemEnManoDerecha = null;
     private GameObject herramientaEnManoIzquierda = null;
 
+    [Header("Modo Inspeccion")]
+    [SerializeField] private Transform posicionInspeccion;
+    [SerializeField] private KeyCode inputInspeccion = KeyCode.F;
+    [SerializeField] private float distanciaMaximaMesa = 3f;
+
+    [SerializeField] private Transform puntoDeInspeccion;
+    [SerializeField] private float velocidadRotacion = 100f;
+
+    private GameObject objetoEnMesa;
+    private bool objetoEnInspeccion = false;
+    private bool recogidaDesdeInspeccion = false;
+
+
+    public bool enModoInspeccion { get; private set; } = false;
+
+    private CharacterController characterController; // si usas este
+
+    private void Start()
+    {
+        characterController = GetComponent<CharacterController>();
+    }
+
     void Update()
     {
+        //Modo inspeccion
+        if (Input.GetKeyDown(inputInspeccion))
+        {
+            if (enModoInspeccion)
+            {
+                SalirModoInspeccion();
+            }
+            else
+            {
+                EntrarModoInspeccion();
+            }
+        }
+
+        if (Input.GetMouseButtonDown(0) && itemEnManoDerecha != null && !objetoEnInspeccion)
+        {
+            Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
+            if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance))
+            {
+                if (hit.collider.CompareTag("PuntoInspeccion")) // Asegúrate que este tag esté bien asignado
+                {
+                    itemEnManoDerecha.transform.position = puntoDeInspeccion.position;
+                    itemEnManoDerecha.transform.rotation = puntoDeInspeccion.rotation;
+                    itemEnManoDerecha.transform.SetParent(puntoDeInspeccion);
+
+                    Rigidbody rb = itemEnManoDerecha.GetComponent<Rigidbody>();
+                    if (rb != null)
+                    {
+                        rb.useGravity = false;
+                        rb.isKinematic = true;
+                    }
+
+                    objetoEnMesa = itemEnManoDerecha;
+                    itemEnManoDerecha = null;
+                    objetoEnInspeccion = true;
+                }
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.E) && objetoEnInspeccion)
+        {
+            RecogerObjeto(objetoEnMesa, manoDerecha, ref itemEnManoDerecha);
+            objetoEnMesa = null;
+            objetoEnInspeccion = false;
+            recogidaDesdeInspeccion = true;
+        }
+
+        //Interaccion con objetos
         DetectarObjetoFrente();
 
         // MANO DERECHA (objetos)
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.E) && !recogidaDesdeInspeccion)
         {
             if (itemEnManoDerecha == null && objetoDetectado != null && tagDetectado.StartsWith("Item"))
             {
@@ -65,8 +135,20 @@ public class ItemInteraction : MonoBehaviour
         {
             ColocarEnMesa(herramientaEnManoIzquierda, ref herramientaEnManoIzquierda);
         }
+
+        if (enModoInspeccion && objetoEnInspeccion && objetoEnMesa != null)
+        {
+            float rotX = Input.GetAxis("Horizontal");
+            float rotY = Input.GetAxis("Vertical");
+
+            objetoEnMesa.transform.Rotate(Vector3.up, rotX * velocidadRotacion * Time.deltaTime, Space.World);
+            objetoEnMesa.transform.Rotate(Vector3.right, -rotY * velocidadRotacion * Time.deltaTime, Space.World);
+        }
+
+        recogidaDesdeInspeccion = false;
     }
 
+    #region Interaccion
     void DetectarObjetoFrente()
     {
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
@@ -94,6 +176,14 @@ public class ItemInteraction : MonoBehaviour
                 if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(true);
                 return;
             }
+            else if(tag == "PuntoInspeccion")
+            {
+                objetoDetectado = hit.collider.gameObject;
+                tagDetectado = tag;
+
+                if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(true);
+                return;
+            }
         }
 
         // No hay objeto válido enfrente
@@ -102,6 +192,7 @@ public class ItemInteraction : MonoBehaviour
 
         if (itemFeedbackUI != null) itemFeedbackUI.SetActive(false);
         if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(false);
+        if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(false);
     }
 
     void RecogerObjeto(GameObject obj, Transform mano, ref GameObject referencia)
@@ -136,6 +227,7 @@ public class ItemInteraction : MonoBehaviour
         if (rb)
         {
             rb.isKinematic = false;
+            rb.useGravity = true; 
             rb.linearVelocity = Vector3.zero;
         }
 
@@ -164,6 +256,36 @@ public class ItemInteraction : MonoBehaviour
             referencia = null;
         }
     }
+    #endregion
+
+    #region ModoInspeccion
+    void EntrarModoInspeccion()
+    {
+        enModoInspeccion = true;
+
+        // Teletransportar al jugador a la posición de inspección
+        transform.position = posicionInspeccion.position;
+        transform.rotation = posicionInspeccion.rotation;
+
+        // Bloquear movimiento
+        if (characterController != null) characterController.enabled = false;
+
+        // Activar UI / modo inspección
+        Debug.Log("Modo inspección activado.");
+        // Aquí luego podrías activar un script de rotación de objeto, etc.
+    }
+
+    void SalirModoInspeccion()
+    {
+        enModoInspeccion = false;
+
+        // Restaurar movimiento
+        if (characterController != null) characterController.enabled = true;
+
+        // Desactivar UI / modo inspección
+        Debug.Log("Modo inspección desactivado.");
+    }
+    #endregion
 
     #region DebugVisual
     void OnDrawGizmos()
