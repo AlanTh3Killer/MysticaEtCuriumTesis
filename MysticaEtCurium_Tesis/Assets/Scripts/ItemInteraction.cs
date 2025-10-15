@@ -14,6 +14,7 @@ public class ItemInteraction : MonoBehaviour
     [Header("Capas")]
     [SerializeField] private LayerMask itemLayer;
     [SerializeField] private LayerMask mesaLayer;
+    [SerializeField] private LayerMask npcLayer;
 
     [Header("UI Feedback")]
     [SerializeField] private GameObject itemFeedbackUI;
@@ -50,19 +51,14 @@ public class ItemInteraction : MonoBehaviour
 
     void Update()
     {
-        //Modo inspeccion
+        // --- MODO INSPECCIÓN ---
         if (Input.GetKeyDown(inputInspeccion))
         {
-            if (enModoInspeccion)
-            {
-                SalirModoInspeccion();
-            }
-            else
-            {
-                EntrarModoInspeccion();
-            }
+            if (enModoInspeccion) SalirModoInspeccion();
+            else EntrarModoInspeccion();
         }
 
+        // --- Colocar objeto en punto de inspección ---
         if (Input.GetMouseButtonDown(0) && itemEnManoDerecha != null && !objetoEnInspeccion)
         {
             Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
@@ -88,6 +84,7 @@ public class ItemInteraction : MonoBehaviour
             }
         }
 
+        // --- Retomar objeto desde inspección ---
         if (Input.GetKeyDown(KeyCode.E) && objetoEnInspeccion)
         {
             RecogerObjeto(objetoEnMesa, manoDerecha, ref itemEnManoDerecha);
@@ -96,12 +93,13 @@ public class ItemInteraction : MonoBehaviour
             recogidaDesdeInspeccion = true;
         }
 
-        //Interaccion con objetos
+        // --- DETECCIÓN DE OBJETO FRENTE ---
         DetectarObjetoFrente();
 
-        // MANO DERECHA (objetos)
+        // --- INTERACCIÓN GENERAL (E) ---MANO DERECHA (objetos)
         if (Input.GetKeyDown(KeyCode.E) && !recogidaDesdeInspeccion)
         {
+            // Interacción con ITEMS
             if (itemEnManoDerecha == null && objetoDetectado != null && tagDetectado.StartsWith("Item"))
             {
                 RecogerObjeto(objetoDetectado, manoDerecha, ref itemEnManoDerecha);
@@ -110,9 +108,25 @@ public class ItemInteraction : MonoBehaviour
             {
                 SoltarObjeto(itemEnManoDerecha, ref itemEnManoDerecha);
             }
+
+            // Interacción con NPC
+            if (objetoDetectado != null && tagDetectado == "NPC")
+            {
+                Debug.Log("Intentando iniciar diálogo con: " + objetoDetectado.name);
+                DialogueSystem dialogo = objetoDetectado.GetComponent<DialogueSystem>();
+                if (dialogo != null)
+                {
+                    Debug.Log("Componente DialogueSystem encontrado. Iniciando diálogo...");
+                    dialogo.IniciarDialogo();
+                }
+                else
+                {
+                    Debug.LogWarning("El NPC detectado no tiene componente DialogueSystem: " + objetoDetectado.name);
+                }
+            }
         }
 
-        // MANO IZQUIERDA (herramientas)
+        // --- MANO IZQUIERDA (herramientas) ---
         if (Input.GetKeyDown(KeyCode.Q))
         {
             if (herramientaEnManoIzquierda == null && objetoDetectado != null && tagDetectado == "Herramienta")
@@ -125,7 +139,7 @@ public class ItemInteraction : MonoBehaviour
             }
         }
 
-        // Colocar con click
+        // --- Colocar con clics ---
         if (Input.GetMouseButtonDown(0) && itemEnManoDerecha != null)
         {
             ColocarEnMesa(itemEnManoDerecha, ref itemEnManoDerecha);
@@ -136,6 +150,7 @@ public class ItemInteraction : MonoBehaviour
             ColocarEnMesa(herramientaEnManoIzquierda, ref herramientaEnManoIzquierda);
         }
 
+        // --- Rotar objeto en modo inspección ---
         if (enModoInspeccion && objetoEnInspeccion && objetoEnMesa != null)
         {
             float rotX = Input.GetAxis("Horizontal");
@@ -154,10 +169,12 @@ public class ItemInteraction : MonoBehaviour
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, interactionDistance, itemLayer))
+        // Combina layers para detectar items y NPCs en el mismo raycast
+        if (Physics.Raycast(ray, out hit, interactionDistance, itemLayer | npcLayer))
         {
             string tag = hit.collider.tag;
 
+            // --- Items ---
             if (tag.StartsWith("Item"))
             {
                 objetoDetectado = hit.collider.gameObject;
@@ -167,6 +184,7 @@ public class ItemInteraction : MonoBehaviour
                 if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(false);
                 return;
             }
+            // --- Herramientas ---
             else if (tag == "Herramienta")
             {
                 objetoDetectado = hit.collider.gameObject;
@@ -176,7 +194,8 @@ public class ItemInteraction : MonoBehaviour
                 if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(true);
                 return;
             }
-            else if(tag == "PuntoInspeccion")
+            // --- Punto de inspección ---
+            else if (tag == "PuntoInspeccion")
             {
                 objetoDetectado = hit.collider.gameObject;
                 tagDetectado = tag;
@@ -184,9 +203,23 @@ public class ItemInteraction : MonoBehaviour
                 if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(true);
                 return;
             }
+
+            // --- NPC ---
+            else if (tag == "NPC")
+            {
+                objetoDetectado = hit.collider.gameObject;
+                tagDetectado = tag;
+
+                itemFeedbackUI?.SetActive(false);
+                herramientaFeedbackUI?.SetActive(false);
+                iniciarInspeccionFeedbackUI?.SetActive(false);
+
+                Debug.Log("NPC detectado: " + hit.collider.name);
+                return;
+            }
         }
 
-        // No hay objeto válido enfrente
+        // --- Si no detecta nada válido ---
         objetoDetectado = null;
         tagDetectado = "";
 

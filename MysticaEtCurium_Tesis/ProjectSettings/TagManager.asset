@@ -13,6 +13,7 @@ TagManager:
   - Herramienta
   - PuntoInspeccion
   - PuntoEspecial
+  - NPC
   layers:
   - Default
   - TransparentFX
@@ -23,7 +24,7 @@ TagManager:
   - Player
   - Item
   - Mesa
-  - 
+  - NPC
   - 
   - 
   - 
