@@ -4,63 +4,109 @@ using UnityEngine.UI;
 
 public class DialogueSystem : MonoBehaviour
 {
-    [Header("UI de diálogo")]
-    [SerializeField] private GameObject panelDialogo;
-    [SerializeField] private TMP_Text textoDialogo;
-    [SerializeField] private Image iconoUI;
+    [Header("Referencias UI")]
+    [SerializeField] private GameObject dialoguePanel;
+    [SerializeField] private TMP_Text dialogueText;
+    [SerializeField] private TMP_Text speakerName;
+    [SerializeField] private string nombrePersonaje = "Morgana";
 
-    [Header("Contenido")]
-    [TextArea(2, 5)] public string[] lineas;
-    public Sprite iconoPersonaje;
+    [Header("Configuración de diálogo")]
+    [TextArea(3, 6)]
+    public string[] lineasDialogo;
 
-    private int indice = 0;
+    private int indiceDialogo = 0;
     private bool dialogoActivo = false;
+
+    // Referencias al jugador (para bloquear movimiento/cámara)
+    private PlayerMovement playerMovement;
+    private PlayerCameraController cameraController;
 
     private void Start()
     {
-        if (panelDialogo != null)
-            panelDialogo.SetActive(false);
+        if (dialoguePanel != null)
+            dialoguePanel.SetActive(false);
 
-        if (iconoUI != null && iconoPersonaje != null)
-            iconoUI.sprite = iconoPersonaje;
+        // Buscar player y sus componentes
+        GameObject player = GameObject.FindWithTag("Player");
+        if (player != null)
+        {
+            playerMovement = player.GetComponent<PlayerMovement>();
+            cameraController = player.GetComponentInChildren<PlayerCameraController>(); // más confiable
+        }
+        else
+        {
+            Debug.LogWarning("No se encontró el objeto con tag 'Player' en la escena.");
+        }
     }
 
     private void Update()
     {
         if (dialogoActivo && Input.GetKeyDown(KeyCode.E))
         {
-            SiguienteLinea();
+            MostrarSiguienteLinea();
         }
     }
 
     public void IniciarDialogo()
     {
-        if (panelDialogo == null || textoDialogo == null || lineas.Length == 0) return;
+        if (dialogoActivo) return; // Evita reiniciar el diálogo si ya está activo
 
-        panelDialogo.SetActive(true);
-        indice = 0;
-        textoDialogo.text = lineas[indice];
+        if (lineasDialogo == null || lineasDialogo.Length == 0)
+        {
+            Debug.LogWarning("El NPC no tiene líneas de diálogo asignadas.");
+            return;
+        }
+
+        // Aseguramos que empiece desde la primera línea real
+        indiceDialogo = 0;
         dialogoActivo = true;
+        dialoguePanel.SetActive(true);
+
+        // Bloqueamos movimiento y cámara
+        if (playerMovement != null) playerMovement.enabled = false;
+        if (cameraController != null) cameraController.enabled = false;
+        else Debug.LogWarning("No se encontró PlayerCameraController dentro del Player.");
+
+        if (speakerName != null)
+            speakerName.text = nombrePersonaje;
+
+        // Mostramos la primera línea sin avanzar el índice todavía
+        MostrarLineaActual();
     }
 
-    void SiguienteLinea()
+    private void MostrarLineaActual()
     {
-        indice++;
-        if (indice < lineas.Length)
+        if (indiceDialogo < lineasDialogo.Length)
         {
-            textoDialogo.text = lineas[indice];
+            if (dialogueText != null)
+                dialogueText.text = lineasDialogo[indiceDialogo];
+        }
+    }
+
+    void MostrarSiguienteLinea()
+    {
+        // Avanzamos solo cuando el jugador presiona E nuevamente
+        indiceDialogo++;
+
+        if (indiceDialogo < lineasDialogo.Length)
+        {
+            MostrarLineaActual();
         }
         else
         {
-            CerrarDialogo();
+            TerminarDialogo();
         }
     }
 
-    void CerrarDialogo()
+    void TerminarDialogo()
     {
-        if (panelDialogo != null)
-            panelDialogo.SetActive(false);
-
         dialogoActivo = false;
+        dialoguePanel.SetActive(false);
+
+        // Restauramos movimiento y cámara
+        if (playerMovement != null) playerMovement.enabled = true;
+        if (cameraController != null) cameraController.enabled = true;
+
+        Debug.Log("Diálogo terminado.");
     }
 }
