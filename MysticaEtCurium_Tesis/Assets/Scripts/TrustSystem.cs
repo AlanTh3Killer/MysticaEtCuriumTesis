@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,6 +10,12 @@ public class TrustSystem : MonoBehaviour
     [SerializeField] private int puntosPorAcierto = 25;
     [SerializeField] private int puntosPorError = 15;
 
+    [Header("Umbrales de nivel (editable)")]
+    [SerializeField] private int umbralNovato = 0;
+    [SerializeField] private int umbralAprendiz = 100;
+    [SerializeField] private int umbralCompetente = 250;
+    [SerializeField] private int umbralRedimido = 500;
+
     [Header("UI (Placeholder)")]
     [SerializeField] private Slider barraConfianza;
     [SerializeField] private TextMeshProUGUI textoPuntos;
@@ -16,146 +23,172 @@ public class TrustSystem : MonoBehaviour
     [SerializeField] private TextMeshProUGUI textoAciertos;
     [SerializeField] private TextMeshProUGUI textoErrores;
     [SerializeField] private TextMeshProUGUI textoBalance;
-
-    private int totalAciertos = 0;
-    private int totalErrores = 0;
-
-    public enum NivelConfianza
-    {
-        Novato,
-        Aprendiz,
-        Competente,
-        Redimido
-    }
-
-    public NivelConfianza nivelActual { get; private set; } = NivelConfianza.Novato;
+    [SerializeField] private TextMeshProUGUI textoValorAcierto;
+    [SerializeField] private TextMeshProUGUI textoValorFallo;
 
     [Header("Panel de puntuación")]
     [SerializeField] private GameObject panelPuntuacion;
     [SerializeField] private float tiempoVisible = 5f;
+
+    private int totalAciertos = 0;
+    private int totalErrores = 0;
     private bool mostrandoPanel = false;
+
+    public enum NivelConfianza { Novato, Aprendiz, Competente, Redimido }
+    public NivelConfianza nivelActual { get; private set; } = NivelConfianza.Novato;
 
     private void Start()
     {
-        ActualizarNivel();
+        if (panelPuntuacion != null)
+            panelPuntuacion.SetActive(false);
+
+        ActualizarNivelDesdePuntos();
         ActualizarUI();
-        Debug.Log($"[TrustSystem] Nivel inicial: {nivelActual} | Puntos: {puntosActuales}");
+        Debug.Log($"[TrustSystem] Start -> Nivel: {nivelActual}, Puntos: {puntosActuales}");
     }
 
-    // Llamar cuando el jugador clasifique correctamente
-    public void SumarPuntos()
+    public void RegistrarAcierto()
     {
-        puntosActuales += puntosPorAcierto;
         totalAciertos++;
-        ActualizarNivel();
+        puntosActuales += puntosPorAcierto;
+        if (puntosActuales < 0) puntosActuales = 0;
+
+        ActualizarNivelDesdePuntos();
         ActualizarUI();
-        Debug.Log($"[TrustSystem] +{puntosPorAcierto} puntos. Total: {puntosActuales}. Nivel: {nivelActual}");
+
+        Debug.Log($"[TrustSystem] Acierto +{puntosPorAcierto} -> Puntos: {puntosActuales} | Nivel: {nivelActual} | Aciertos: {totalAciertos}");
     }
 
-    // Llamar cuando el jugador falle una clasificación
-    public void RestarPuntos()
+    public void RegistrarError()
     {
+        totalErrores++;
         puntosActuales -= puntosPorError;
         if (puntosActuales < 0) puntosActuales = 0;
-        totalErrores++;
-        ActualizarNivel();
+
+        ActualizarNivelDesdePuntos();
         ActualizarUI();
-        Debug.Log($"[TrustSystem] -{puntosPorError} puntos. Total: {puntosActuales}. Nivel: {nivelActual}");
+
+        Debug.Log($"[TrustSystem] Error -{puntosPorError} -> Puntos: {puntosActuales} | Nivel: {nivelActual} | Errores: {totalErrores}");
     }
 
-    private void ActualizarNivel()
+    private void ActualizarNivelDesdePuntos()
     {
         NivelConfianza nuevoNivel = nivelActual;
 
-        if (puntosActuales < 100)
-            nuevoNivel = NivelConfianza.Novato;
-        else if (puntosActuales < 250)
-            nuevoNivel = NivelConfianza.Aprendiz;
-        else if (puntosActuales < 500)
-            nuevoNivel = NivelConfianza.Competente;
-        else
+        if (puntosActuales >= umbralRedimido)
             nuevoNivel = NivelConfianza.Redimido;
+        else if (puntosActuales >= umbralCompetente)
+            nuevoNivel = NivelConfianza.Competente;
+        else if (puntosActuales >= umbralAprendiz)
+            nuevoNivel = NivelConfianza.Aprendiz;
+        else
+            nuevoNivel = NivelConfianza.Novato;
 
         if (nuevoNivel != nivelActual)
         {
             nivelActual = nuevoNivel;
-            Debug.Log($"[TrustSystem] Cambio de nivel  Ahora eres {nivelActual}");
+            Debug.Log($"[TrustSystem] CambioNivel -> Ahora: {nivelActual}");
         }
     }
 
     private void ActualizarUI()
     {
-        // Calcular progreso de barra
-        if (barraConfianza != null)
-        {
-            float progreso = 0f;
+        if (textoPuntos != null) textoPuntos.text = $"Puntos totales: {puntosActuales}";
+        if (textoNivel != null) textoNivel.text = $"Nivel: {nivelActual}";
+        if (textoAciertos != null) textoAciertos.text = $"Aciertos: {totalAciertos}";
+        if (textoErrores != null) textoErrores.text = $"Errores: {totalErrores}";
 
-            switch (nivelActual)
-            {
-                case NivelConfianza.Novato:
-                    progreso = (float)puntosActuales / 100f;
-                    break;
-                case NivelConfianza.Aprendiz:
-                    progreso = (float)(puntosActuales - 100) / 150f;
-                    break;
-                case NivelConfianza.Competente:
-                    progreso = (float)(puntosActuales - 250) / 250f;
-                    break;
-                case NivelConfianza.Redimido:
-                    progreso = 1f;
-                    break;
-            }
-
-            barraConfianza.value = Mathf.Clamp01(progreso);
-        }
-
-        // Actualizar textos
-        if (textoPuntos != null)
-            textoPuntos.text = $"Puntos totales: {puntosActuales}";
-
-        if (textoNivel != null)
-            textoNivel.text = $"Nivel: {nivelActual}";
-
-        if (textoAciertos != null)
-            textoAciertos.text = $"Aciertos: {totalAciertos} (+{puntosPorAcierto} cada uno)";
-
-        if (textoErrores != null)
-            textoErrores.text = $"Errores: {totalErrores} (-{puntosPorError} cada uno)";
+        // Calcular valores totales
+        int totalGanado = totalAciertos * puntosPorAcierto;
+        int totalPerdido = totalErrores * puntosPorError;
+        int balance = totalGanado - totalPerdido;
 
         if (textoBalance != null)
-        {
-            int balance = (totalAciertos * puntosPorAcierto) - (totalErrores * puntosPorError);
             textoBalance.text = $"Balance diario: {balance}";
+
+        //  Aquí está el cambio importante:
+        // Mostrar el valor TOTAL ganado y perdido
+        if (textoValorAcierto != null)
+            textoValorAcierto.text = $"+{totalGanado}";
+        if (textoValorFallo != null)
+            textoValorFallo.text = $"-{totalPerdido}";
+
+        if (barraConfianza != null)
+        {
+            float progreso = CalcularProgresoNormalizado();
+            barraConfianza.value = Mathf.Clamp01(progreso);
         }
     }
 
-    // Métodos públicos
-    public NivelConfianza ObtenerNivelActual() => nivelActual;
-    public int ObtenerPuntosActuales() => puntosActuales;
-    public int ObtenerAciertos() => totalAciertos;
-    public int ObtenerErrores() => totalErrores;
+    private float CalcularProgresoNormalizado()
+    {
+        int min = 0;
+        int max = 1;
 
-    // Llamado desde el ciclo día/noche al terminar el día
+        switch (nivelActual)
+        {
+            case NivelConfianza.Novato:
+                min = umbralNovato;
+                max = umbralAprendiz;
+                break;
+            case NivelConfianza.Aprendiz:
+                min = umbralAprendiz;
+                max = umbralCompetente;
+                break;
+            case NivelConfianza.Competente:
+                min = umbralCompetente;
+                max = umbralRedimido;
+                break;
+            case NivelConfianza.Redimido:
+                return 1f;
+        }
+
+        if (max - min <= 0) return 1f;
+
+        float normalized = (float)(puntosActuales - min) / (float)(max - min);
+        return normalized;
+    }
+
     public void MostrarPanelFinal()
     {
         if (panelPuntuacion == null || mostrandoPanel) return;
-        StartCoroutine(MostrarPanelTemporal());
+
+        // Buscar y desactivar scripts del jugador
+        PlayerMovement pm = FindObjectOfType<PlayerMovement>();
+        PlayerCameraController pc = FindObjectOfType<PlayerCameraController>();
+        ItemInteraction ii = FindObjectOfType<ItemInteraction>();
+
+        if (pm != null) pm.enabled = false;
+        if (pc != null) pc.enabled = false;
+        if (ii != null) ii.enabled = false;
+
+        Debug.Log("[TrustSystem] Jugador bloqueado. Mostrando panel de puntuación...");
+
+        ActualizarNivelDesdePuntos();
+        ActualizarUI();
+        StartCoroutine(MostrarPanelTemporal(pm, pc, ii));
     }
 
-    private System.Collections.IEnumerator MostrarPanelTemporal()
+    private IEnumerator MostrarPanelTemporal(PlayerMovement pm, PlayerCameraController pc, ItemInteraction ii)
     {
         mostrandoPanel = true;
-
-        // Activar panel
         panelPuntuacion.SetActive(true);
-        Debug.Log("[TrustSystem] Mostrando panel de puntuación...");
 
-        // Esperar unos segundos
-        yield return new WaitForSeconds(tiempoVisible);
+        yield return new WaitForSecondsRealtime(tiempoVisible);
 
-        // Ocultar panel
+        // Reactivar control del jugador
+        if (pm != null) pm.enabled = true;
+        if (pc != null) pc.enabled = true;
+        if (ii != null) ii.enabled = true;
+
         panelPuntuacion.SetActive(false);
         mostrandoPanel = false;
-        Debug.Log("[TrustSystem] Panel ocultado. Inicia nuevo día.");
+
+        Debug.Log("[TrustSystem] Panel ocultado. Jugador desbloqueado.");
     }
+
+    public int ObtenerPuntosActuales() => puntosActuales;
+    public int ObtenerAciertos() => totalAciertos;
+    public int ObtenerErrores() => totalErrores;
+    public NivelConfianza ObtenerNivel() => nivelActual;
 }

@@ -13,13 +13,13 @@ public class SuccessFailsTest : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            trustSystem.SumarPuntos();
+            trustSystem.RegistrarAcierto();
             Debug.Log("[TEST] Se ha sumado puntuación (acierto)");
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            trustSystem.RestarPuntos();
+            trustSystem.RegistrarError();
             Debug.Log("[TEST] Se ha restado puntuación (error)");
         }
     }
