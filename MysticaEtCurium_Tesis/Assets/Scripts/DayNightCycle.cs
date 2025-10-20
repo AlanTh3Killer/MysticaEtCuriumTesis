@@ -27,6 +27,8 @@ public class DayNightCycle : MonoBehaviour
     private float timeRemaining;
     private bool dayActive = true;
 
+    [SerializeField] private TrustSystem trustSystem; // Arrastra aquí el script en el inspector
+
     private void Start()
     {
         if (mainLight == null)
@@ -99,6 +101,9 @@ public class DayNightCycle : MonoBehaviour
     {
         dayActive = false;
         Debug.Log("El día ha terminado. Fin de jornada.");
+        Debug.Log("[DayNightCycle] Día terminado, mostrando puntuación...");
+        if (trustSystem != null)
+            trustSystem.MostrarPanelFinal();
     }
 
 #if UNITY_EDITOR
