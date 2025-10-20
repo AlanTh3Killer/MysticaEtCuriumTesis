@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b835df412a41880429d514ef27c32a52, type: 3}
+  m_Name: RunaDeConfinamiento
+  m_EditorClassIdentifier: 
+  itemName: Runa de confinamiento
+  description: Las clasicas runas de confinamiento. Son muy poderosas ya que tienen
+    el poder de atrapar la forma fisica o espiritual de otros seres. Algunos incluso
+    tambien llegan a usarlas como un recurso para defenderse de ataques magicos.
+    Hay que tener cuidado, un paso en falso y se podria liberar lo que contienen.
+  classification: 1
+  characteristics: 070000000800000005000000
+  isFrozen: 0
+  isBurning: 0
+  hasVines: 0

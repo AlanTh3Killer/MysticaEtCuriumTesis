@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b835df412a41880429d514ef27c32a52, type: 3}
+  m_Name: ReliquiaPoseida
+  m_EditorClassIdentifier: 
+  itemName: Reliquia poseida
+  description: A veces es imposible saber de donde proceden los objetos que nos llegan.
+    Este seguramente fue robado de alguna tumba antigua o algun templo abandonado
+    desde hace mucho tiempo. Buen intento persona que intento pasarnos la maldicion
+    o a algun inocente, por suerte estoy yo como control de calidad que se encarga
+    estas situaciones. Casi siento lastima por el tipo. Cuando destruya el objeto,
+    recibira la maldicion original pero multiplicada por 10.
+  classification: 2
+  characteristics: 0f000000100000000a000000
+  isFrozen: 0
+  isBurning: 0
+  hasVines: 0
