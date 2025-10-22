@@ -39,6 +39,9 @@ public class ItemInteraction : MonoBehaviour
     private bool objetoEnInspeccion = false;
     private bool recogidaDesdeInspeccion = false;
 
+    [Header("Física de lanzamiento")]
+    [SerializeField] private float fuerzaArrojar = 10f;
+    [SerializeField] private float umbralMovimiento = 0.2f; // Cuánta velocidad del jugador cuenta como "moverse"
 
     public bool enModoInspeccion { get; private set; } = false;
 
@@ -51,6 +54,9 @@ public class ItemInteraction : MonoBehaviour
 
     void Update()
     {
+        if (DialogueSystem.DialogoActivo)
+            return;
+
         // --- MODO INSPECCIÓN ---
         if (Input.GetKeyDown(inputInspeccion))
         {
@@ -99,14 +105,13 @@ public class ItemInteraction : MonoBehaviour
         // --- INTERACCIÓN GENERAL (E) ---MANO DERECHA (objetos)
         if (Input.GetKeyDown(KeyCode.E) && !recogidaDesdeInspeccion)
         {
-            // Interacción con ITEMS
             if (itemEnManoDerecha == null && objetoDetectado != null && tagDetectado.StartsWith("Item"))
             {
                 RecogerObjeto(objetoDetectado, manoDerecha, ref itemEnManoDerecha);
             }
             else if (itemEnManoDerecha != null)
             {
-                SoltarObjeto(itemEnManoDerecha, ref itemEnManoDerecha);
+                ArrojarObjeto(itemEnManoDerecha, ref itemEnManoDerecha);
             }
 
             // Interacción con NPC
@@ -135,7 +140,7 @@ public class ItemInteraction : MonoBehaviour
             }
             else if (herramientaEnManoIzquierda != null)
             {
-                SoltarObjeto(herramientaEnManoIzquierda, ref herramientaEnManoIzquierda);
+                ArrojarObjeto(herramientaEnManoIzquierda, ref herramientaEnManoIzquierda);
             }
         }
 
@@ -164,6 +169,12 @@ public class ItemInteraction : MonoBehaviour
     }
 
     #region Interaccion
+    bool JugadorSeMueve()
+    {
+        if (characterController == null) return false;
+        return characterController.velocity.magnitude > umbralMovimiento;
+    }
+
     void DetectarObjetoFrente()
     {
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
@@ -249,10 +260,9 @@ public class ItemInteraction : MonoBehaviour
         if (itemFeedbackUI != null) itemFeedbackUI.SetActive(false);
     }
 
-    void SoltarObjeto(GameObject obj, ref GameObject referencia)
+    void ArrojarObjeto(GameObject obj, ref GameObject referencia)
     {
         obj.transform.SetParent(null);
-
         Collider col = obj.GetComponent<Collider>();
         if (col) col.enabled = true;
 
@@ -260,11 +270,17 @@ public class ItemInteraction : MonoBehaviour
         if (rb)
         {
             rb.isKinematic = false;
-            rb.useGravity = true; 
-            rb.linearVelocity = Vector3.zero;
+            rb.useGravity = true;
+
+            // Fuerza hacia adelante + ligera aleatoriedad para realismo
+            Vector3 direccion = cameraTransform.forward + new Vector3(Random.Range(-0.05f, 0.05f), Random.Range(0f, 0.05f), 0);
+            rb.AddForce(direccion.normalized * fuerzaArrojar, ForceMode.Impulse);
+
+            // Pequeño torque para rotación
+            rb.AddTorque(Random.insideUnitSphere * 2f, ForceMode.Impulse);
         }
 
-        obj.transform.position = cameraTransform.position + cameraTransform.forward * 0.75f;
+        Debug.Log("Objeto arrojado: " + obj.name);
         referencia = null;
     }
 

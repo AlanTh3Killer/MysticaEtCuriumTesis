@@ -4,8 +4,11 @@ using UnityEngine.UI;
 
 public class DialogueSystem : MonoBehaviour
 {
+    private bool isPaused = false;
+    public static bool DialogoActivo = false;
+
     [Header("Referencias UI")]
-    [SerializeField] private GameObject dialoguePanel;
+    [SerializeField] public GameObject dialoguePanel;
     [SerializeField] private TMP_Text dialogueText;
     [SerializeField] private TMP_Text speakerName;
     [SerializeField] private string nombrePersonaje = "Morgana";
@@ -43,6 +46,7 @@ public class DialogueSystem : MonoBehaviour
     {
         if (dialogoActivo && Input.GetKeyDown(KeyCode.E))
         {
+            if (isPaused) return; // Evita que avance el diálogo durante la pausa
             MostrarSiguienteLinea();
         }
     }
@@ -72,6 +76,16 @@ public class DialogueSystem : MonoBehaviour
 
         // Mostramos la primera línea sin avanzar el índice todavía
         MostrarLineaActual();
+    }
+
+    public void PausarDialogo()
+    {
+        isPaused = true;
+    }
+
+    public void ReanudarDialogo()
+    {
+        isPaused = false;
     }
 
     private void MostrarLineaActual()

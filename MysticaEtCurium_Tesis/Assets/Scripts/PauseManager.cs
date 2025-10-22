@@ -10,6 +10,9 @@ public class PauseManager : MonoBehaviour
     [SerializeField] private PlayerCameraController playerCameraController;
     [SerializeField] private DayNightCycle dayNightCycle;
     [SerializeField] private ItemInteraction itemInteraction; // NUEVO: referencia al script de interacción
+    [SerializeField] private DialogueSystem dialogueSystem;
+
+    private bool dialogoActivoAntesDePausa = false;
 
     private void Start()
     {
@@ -31,10 +34,18 @@ public class PauseManager : MonoBehaviour
     public void PausarJuego()
     {
         JuegoPausado = true;
-        Time.timeScale = 0f; // Detiene física, animaciones y deltaTime
+        Time.timeScale = 0f;
 
         if (menuPausa != null)
             menuPausa.SetActive(true);
+
+        // Guardamos si había un diálogo activo
+        if (dialogueSystem != null)
+        {
+            dialogoActivoAntesDePausa = dialogueSystem.dialoguePanel.activeSelf;
+            if (dialogoActivoAntesDePausa)
+                dialogueSystem.dialoguePanel.SetActive(false);
+        }
 
         // Desactivar control del jugador
         if (playerMovement != null)
@@ -43,15 +54,13 @@ public class PauseManager : MonoBehaviour
         if (playerCameraController != null)
             playerCameraController.enabled = false;
 
-        // Desactivar interacción con objetos
+        // Desactivar interacción
         if (itemInteraction != null)
             itemInteraction.enabled = false;
 
-        // Detener ciclo día/noche
         if (dayNightCycle != null)
             dayNightCycle.enabled = false;
 
-        // Mostrar y desbloquear el cursor
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
@@ -71,15 +80,19 @@ public class PauseManager : MonoBehaviour
         if (playerCameraController != null)
             playerCameraController.enabled = true;
 
-        // Reactivar interacción con objetos
         if (itemInteraction != null)
             itemInteraction.enabled = true;
 
-        // Reactivar ciclo día/noche
         if (dayNightCycle != null)
             dayNightCycle.enabled = true;
 
-        // Ocultar y bloquear cursor
+        // Si había diálogo activo antes de pausar, lo restauramos
+        if (dialogueSystem != null && dialogoActivoAntesDePausa)
+        {
+            dialogueSystem.dialoguePanel.SetActive(true);
+            dialogoActivoAntesDePausa = false;
+        }
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
