@@ -39,6 +39,8 @@ public class ItemInteraction : MonoBehaviour
     private bool objetoEnInspeccion = false;
     private bool recogidaDesdeInspeccion = false;
 
+    [SerializeField] private MagnifiingGlassTool lupaTool;
+
     [Header("Física de lanzamiento")]
     [SerializeField] private float fuerzaArrojar = 10f;
     [SerializeField] private float umbralMovimiento = 0.2f; // Cuánta velocidad del jugador cuenta como "moverse"
@@ -145,6 +147,25 @@ public class ItemInteraction : MonoBehaviour
         }
 
         // --- Colocar con clics ---
+        if (enModoInspeccion && Input.GetMouseButtonDown(0) && herramientaEnManoIzquierda != null)
+        {
+            // si la herramienta en la mano es la lupa, iniciar uso
+            if (herramientaEnManoIzquierda.GetComponent<MagnifiingGlassTool>() != null)
+            {
+                lupaTool = herramientaEnManoIzquierda.GetComponent<MagnifiingGlassTool>();
+                lupaTool.UseStart();
+            }
+        }
+        if (enModoInspeccion && Input.GetMouseButton(0) && herramientaEnManoIzquierda != null)
+        {
+            if (lupaTool != null) lupaTool.UseHold();
+        }
+        if (enModoInspeccion && Input.GetMouseButtonUp(0) && lupaTool != null)
+        {
+            lupaTool.UseRelease();
+            lupaTool = null;
+        }
+
         if (Input.GetMouseButtonDown(0) && itemEnManoDerecha != null)
         {
             ColocarEnMesa(itemEnManoDerecha, ref itemEnManoDerecha);
