@@ -191,6 +191,9 @@ MonoBehaviour:
   mesaLayer:
     serializedVersion: 2
     m_Bits: 256
+  npcLayer:
+    serializedVersion: 2
+    m_Bits: 0
   itemFeedbackUI: {fileID: 0}
   herramientaFeedbackUI: {fileID: 0}
   iniciarInspeccionFeedbackUI: {fileID: 0}
@@ -199,6 +202,9 @@ MonoBehaviour:
   distanciaMaximaMesa: 3
   puntoDeInspeccion: {fileID: 0}
   velocidadRotacion: 100
+  lupaTool: {fileID: 0}
+  fuerzaArrojar: 10
+  umbralMovimiento: 0.2
 --- !u!1 &1872877042217557519
 GameObject:
   m_ObjectHideFlags: 0
@@ -224,7 +230,7 @@ Transform:
   m_GameObject: {fileID: 1872877042217557519}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.817697, z: 0}
+  m_LocalPosition: {x: 0, y: -0.23838821, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -286,7 +292,7 @@ Transform:
   m_GameObject: {fileID: 5365478839149367128}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.817697, z: 0}
+  m_LocalPosition: {x: 0, y: -0.23838824, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

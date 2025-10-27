@@ -14,6 +14,7 @@ TagManager:
   - PuntoInspeccion
   - PuntoEspecial
   - NPC
+  - Container
   layers:
   - Default
   - TransparentFX
