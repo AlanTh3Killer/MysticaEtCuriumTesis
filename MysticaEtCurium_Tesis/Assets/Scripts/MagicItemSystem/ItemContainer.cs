@@ -13,10 +13,20 @@ public class ItemContainer : MonoBehaviour
     public AudioClip correctSound;
     public AudioClip incorrectSound; 
 
+    private TrustSystem trustSystem;
+
+    private void Start()
+    {
+        // Buscar el TrustSystem en escena al iniciar
+        trustSystem = FindObjectOfType<TrustSystem>();
+
+        if (trustSystem == null)
+            Debug.LogWarning("[ItemContainer] No se encontró el TrustSystem en la escena. No se registrarán puntos.");
+    }
+
     // Este método lo llamará el hijo (ContainerTrigger) cuando reciba un OnTriggerEnter
     public void OnObjectEntered(Collider other)
     {
-        // Buscar el componente MagicItemBehaviour en el objeto entrante
         MagicItemBehaviour itemBehaviour = other.GetComponent<MagicItemBehaviour>();
         if (itemBehaviour == null)
         {
@@ -24,34 +34,37 @@ public class ItemContainer : MonoBehaviour
             return;
         }
 
-        // Obtener la data del ScriptableObject
         MagicItemDataSO data = itemBehaviour.data;
         if (data == null)
         {
-            Debug.LogWarning($"[ItemContainer:{name}] '{other.name}' no tiene MagicItemDataSO asignado en MagicItemBehaviour.");
+            Debug.LogWarning($"[ItemContainer:{name}] '{other.name}' no tiene MagicItemDataSO asignado.");
             return;
         }
 
-        // Comparar clasificaciones
-        if (data.classification == acceptedClassification)
-        {
-            Debug.Log($"[ItemContainer:{name}]  '{data.itemName}' correctamente colocado. ({data.classification})");
+        bool esCorrecto = data.classification == acceptedClassification;
 
+        if (esCorrecto)
+        {
+            Debug.Log($"[ItemContainer:{name}] '{data.itemName}' correctamente colocado ({data.classification}).");
             if (correctEffect) correctEffect.Play();
             if (audioSource && correctSound) audioSource.PlayOneShot(correctSound);
 
-            // TODO: marcar objeto como procesado, sumar puntos, desactivar, etc.
-            // Ejemplo simple: desactivar el objeto para que no vuelva a ser detectado
+            // Registrar acierto
+            if (trustSystem != null)
+                trustSystem.RegistrarAcierto();
+
+            // Desactivar objeto o marcarlo como procesado
             // other.gameObject.SetActive(false);
         }
         else
         {
-            Debug.Log($"[ItemContainer:{name}]  '{data.itemName}' colocado incorrectamente. ({data.classification} ? {acceptedClassification})");
-
+            Debug.Log($"[ItemContainer:{name}] X '{data.itemName}' colocado incorrectamente ({data.classification} no es igual {acceptedClassification}).");
             if (incorrectEffect) incorrectEffect.Play();
             if (audioSource && incorrectSound) audioSource.PlayOneShot(incorrectSound);
 
-            // TODO: lógica de penalización o efectos negativos
+            // Registrar error
+            if (trustSystem != null)
+                trustSystem.RegistrarError();
         }
     }
 }
