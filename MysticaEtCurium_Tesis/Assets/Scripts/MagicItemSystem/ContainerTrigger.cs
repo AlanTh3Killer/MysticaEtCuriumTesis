@@ -3,30 +3,23 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class ContainerTrigger : MonoBehaviour
 {
-    [Tooltip("Referencia al script ItemContainer en el padre.")]
-    public ItemContainer parentContainer;
+    private ItemContainer parentContainer;
 
-    private void Reset()
+    private void Start()
     {
-        // Asegura que el collider sea trigger por defecto
-        Collider col = GetComponent<Collider>();
-        if (col) col.isTrigger = true;
-    }
-
-    private void Awake()
-    {
-        Collider col = GetComponent<Collider>();
-        if (col && !col.isTrigger)
-            col.isTrigger = true;
-
+        parentContainer = GetComponentInParent<ItemContainer>();
         if (parentContainer == null)
-            parentContainer = GetComponentInParent<ItemContainer>();
+        {
+            Debug.LogError("[ContainerTrigger] No se encontró ItemContainer en el padre");
+        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        // Reenvía al script del padre
         if (parentContainer != null)
-            parentContainer.OnObjectEntered(other);
+        {
+            // Reenvía el evento al contenedor padre
+            parentContainer.SendMessage("OnTriggerEnter", other, SendMessageOptions.DontRequireReceiver);
+        }
     }
 }

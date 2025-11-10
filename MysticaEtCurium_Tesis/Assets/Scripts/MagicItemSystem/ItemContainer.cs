@@ -1,70 +1,81 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ItemContainer : MonoBehaviour
 {
-    [Header("Configuración del Contenedor")]
-    [Tooltip("Tipo de ítem que este contenedor acepta (Vendible, Contenible o Destruible).")]
+    [Header("Clasificacion que acepta este contenedor")]
     public MagicItemDataSO.ItemClassification acceptedClassification;
 
-    [Header("Opcional: Efectos visuales o sonido")]
-    public ParticleSystem correctEffect;
-    public ParticleSystem incorrectEffect;
-    public AudioSource audioSource;
-    public AudioClip correctSound;
-    public AudioClip incorrectSound; 
+    [Header("Fuerza de expulsion para objetos sin script")]
+    public float ejectionForce = 5f;
+
+    [Header("Tiempo antes de destruir items validos o invalidos")]
+    public float destroyDelay = 2f;
 
     private TrustSystem trustSystem;
 
     private void Start()
     {
-        // Buscar el TrustSystem en escena al iniciar
         trustSystem = FindObjectOfType<TrustSystem>();
-
-        if (trustSystem == null)
-            Debug.LogWarning("[ItemContainer] No se encontró el TrustSystem en la escena. No se registrarán puntos.");
     }
 
-    // Este método lo llamará el hijo (ContainerTrigger) cuando reciba un OnTriggerEnter
-    public void OnObjectEntered(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
-        MagicItemBehaviour itemBehaviour = other.GetComponent<MagicItemBehaviour>();
-        if (itemBehaviour == null)
+        // Verifica si el objeto tiene el script MagicItemBehaviour
+        MagicItemBehaviour item = other.GetComponent<MagicItemBehaviour>();
+
+        if (item != null)
         {
-            Debug.Log($"[ItemContainer:{name}] '{other.name}' no tiene MagicItemBehaviour — ignorado.");
-            return;
-        }
+            MagicItemDataSO data = item.data;
 
-        MagicItemDataSO data = itemBehaviour.data;
-        if (data == null)
-        {
-            Debug.LogWarning($"[ItemContainer:{name}] '{other.name}' no tiene MagicItemDataSO asignado.");
-            return;
-        }
+            if (data != null)
+            {
+                // Verifica si la clasificacion coincide con el contenedor
+                if (data.classification == acceptedClassification)
+                {
+                    if (trustSystem != null)
+                    {
+                        trustSystem.RegistrarAcierto();
+                    }
+                    Debug.Log("[ItemContainer] Objeto correcto: " + data.itemName);
+                }
+                else
+                {
+                    if (trustSystem != null)
+                    {
+                        trustSystem.RegistrarError();
+                    }
+                    Debug.Log("[ItemContainer] Objeto incorrecto: " + data.itemName);
+                }
 
-        bool esCorrecto = data.classification == acceptedClassification;
-
-        if (esCorrecto)
-        {
-            Debug.Log($"[ItemContainer:{name}] '{data.itemName}' correctamente colocado ({data.classification}).");
-            if (correctEffect) correctEffect.Play();
-            if (audioSource && correctSound) audioSource.PlayOneShot(correctSound);
-
-            // Registrar acierto
-            if (trustSystem != null)
-                trustSystem.RegistrarAcierto();
-
-            // Desactivar objeto o marcarlo como procesado
-            // other.gameObject.SetActive(false);
+                // Destruir el objeto despues de un tiempo
+                StartCoroutine(DestroyAfterDelay(other.gameObject, destroyDelay));
+            }
+            else
+            {
+                Debug.LogWarning("[ItemContainer] El objeto no tiene datos asignados en MagicItemBehaviour");
+            }
         }
         else
         {
-            Debug.Log($"[ItemContainer:{name}] X '{data.itemName}' colocado incorrectamente ({data.classification} no es igual {acceptedClassification}).");
-            if (incorrectEffect) incorrectEffect.Play();
-            if (audioSource && incorrectSound) audioSource.PlayOneShot(incorrectSound);
+            // Si no tiene MagicItemBehaviour (ejemplo: herramientas)
+            Rigidbody rb = other.attachedRigidbody;
+            if (rb != null)
+            {
+                Vector3 ejectionDirection = (other.transform.position - transform.position).normalized + Vector3.up * 0.5f;
+                rb.AddForce(ejectionDirection * ejectionForce, ForceMode.Impulse);
+                Debug.Log("[ItemContainer] Objeto sin script expulsado: " + other.name);
+            }
+        }
+    }
 
-            // Registrar error
-            if (trustSystem != null)
-                trustSystem.RegistrarError();
+    private IEnumerator DestroyAfterDelay(GameObject obj, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (obj != null)
+        {
+            Destroy(obj);
         }
     }
 }

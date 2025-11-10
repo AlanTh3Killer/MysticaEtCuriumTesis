@@ -11180,11 +11180,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   acceptedClassification: 0
-  correctEffect: {fileID: 0}
-  incorrectEffect: {fileID: 0}
-  audioSource: {fileID: 0}
-  correctSound: {fileID: 0}
-  incorrectSound: {fileID: 0}
+  ejectionForce: 5
+  destroyDelay: 2
 --- !u!1 &231724657
 GameObject:
   m_ObjectHideFlags: 0
@@ -21008,11 +21005,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   acceptedClassification: 1
-  correctEffect: {fileID: 0}
-  incorrectEffect: {fileID: 0}
-  audioSource: {fileID: 0}
-  correctSound: {fileID: 0}
-  incorrectSound: {fileID: 0}
+  ejectionForce: 5
+  destroyDelay: 2
 --- !u!1001 &245126985
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -25198,7 +25192,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9fd22149c3b0c824fbd9ce2ca3d8bc25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parentContainer: {fileID: 162989485}
 --- !u!1 &758627912
 GameObject:
   m_ObjectHideFlags: 0
@@ -25267,7 +25260,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9fd22149c3b0c824fbd9ce2ca3d8bc25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parentContainer: {fileID: 808616649}
 --- !u!1001 &778534619
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -35114,11 +35106,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   acceptedClassification: 2
-  correctEffect: {fileID: 0}
-  incorrectEffect: {fileID: 0}
-  audioSource: {fileID: 0}
-  correctSound: {fileID: 0}
-  incorrectSound: {fileID: 0}
+  ejectionForce: 5
+  destroyDelay: 2
 --- !u!1001 &810337829
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -41631,7 +41620,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9fd22149c3b0c824fbd9ce2ca3d8bc25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parentContainer: {fileID: 239903225}
 --- !u!1001 &1588700183
 PrefabInstance:
   m_ObjectHideFlags: 0
