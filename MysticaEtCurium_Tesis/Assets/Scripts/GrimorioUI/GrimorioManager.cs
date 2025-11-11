@@ -4,17 +4,21 @@ using TMPro;
 
 public class GrimorioManager : MonoBehaviour
 {
+    public static GrimorioManager Instance { get; private set; }
+
+    public GrimorioContentManager contentManager;
+
     [Header("Panel Principal del Grimorio")]
     public GameObject grimorioPanel;
 
     [Header("Paginas individuales (en orden)")]
-    public GameObject[] paginas; // Cada página individual (izquierda y derecha)
+    public GameObject[] paginas;
 
-    [Header("Textos de número de página (izquierda y derecha)")]
+    [Header("Textos de numero de pagina (izquierda y derecha)")]
     public TextMeshProUGUI leftPageNumberTxt;
     public TextMeshProUGUI rightPageNumberTxt;
 
-    [Header("Botones de navegación")]
+    [Header("Botones de navegacion")]
     public Button prevPageButton;
     public Button nextPageButton;
 
@@ -23,18 +27,26 @@ public class GrimorioManager : MonoBehaviour
     private PlayerCameraController playerCamera;
     private ItemInteraction itemInteraction;
 
-    private int paginaActual = 0; // índice base del par de páginas
+    private int paginaActual = 0;
     private bool grimorioActivo = false;
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
 
     void Start()
     {
         grimorioPanel.SetActive(false);
 
-        // Configurar botones
         if (prevPageButton != null) prevPageButton.onClick.AddListener(PaginaAnterior);
         if (nextPageButton != null) nextPageButton.onClick.AddListener(SiguientePagina);
 
-        // Buscar referencias del jugador
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
@@ -59,6 +71,11 @@ public class GrimorioManager : MonoBehaviour
 
     void AbrirGrimorio()
     {
+        if (contentManager != null)
+        {
+            contentManager.ShowCurrentPages();
+        }
+
         grimorioPanel.SetActive(true);
         grimorioActivo = true;
 
@@ -87,9 +104,11 @@ public class GrimorioManager : MonoBehaviour
     {
         paginaActual -= 2;
         if (paginaActual < 0)
-            paginaActual = Mathf.Max(0, paginas.Length - (paginas.Length % 2 == 0 ? 2 : 1));
+            paginaActual = Mathf.Max(0, paginas.Length - 2);
 
         ActualizarPaginas();
+        if (contentManager != null)
+            contentManager.PreviousPage();
     }
 
     void SiguientePagina()
@@ -99,22 +118,21 @@ public class GrimorioManager : MonoBehaviour
             paginaActual = 0;
 
         ActualizarPaginas();
+        if (contentManager != null)
+            contentManager.NextPage();
     }
 
     void ActualizarPaginas()
     {
-        // Desactivar todas las páginas primero
         for (int i = 0; i < paginas.Length; i++)
         {
             paginas[i].SetActive(false);
         }
 
-        // Activar las dos actuales (izquierda y derecha)
         paginas[paginaActual].SetActive(true);
         if (paginaActual + 1 < paginas.Length)
             paginas[paginaActual + 1].SetActive(true);
 
-        // Actualizar textos de número de página
         if (leftPageNumberTxt != null)
             leftPageNumberTxt.text = (paginaActual + 1).ToString();
 
@@ -125,5 +143,11 @@ public class GrimorioManager : MonoBehaviour
             else
                 rightPageNumberTxt.text = "-";
         }
+    }
+
+    // Metodo de ejemplo (puedes personalizarlo)
+    public void UnlockEntry(string entryId)
+    {
+        Debug.Log("[GrimorioManager] Entrada desbloqueada: " + entryId);
     }
 }

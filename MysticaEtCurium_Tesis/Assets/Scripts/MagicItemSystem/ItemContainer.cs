@@ -37,6 +37,7 @@ public class ItemContainer : MonoBehaviour
                     if (trustSystem != null)
                     {
                         trustSystem.RegistrarAcierto();
+                        GrimorioManager.Instance.UnlockEntry(item.data.grimorioId);
                     }
                     Debug.Log("[ItemContainer] Objeto correcto: " + data.itemName);
                 }

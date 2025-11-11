@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b835df412a41880429d514ef27c32a52, type: 3}
   m_Name: VasijaResonante
   m_EditorClassIdentifier: 
+  grimorioId: 
   itemName: Vasija Resonante
   description: "Estas vasijas usualmente las usan como castigo hacia otros seres
     vivos. Pueden contener a alguien por miles y miles de a\xF1os. Aunque ese tiempo
-    pasa factura. Entre mas dire el sello, mas se deteriora la escencia de quien
+    pasa factura. Entre mas terrible el sello, mas se deteriora la escencia de quien
     este atrapado en ella."
   classification: 1
   characteristics: 060000000900000007000000

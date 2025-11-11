@@ -4,6 +4,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewMagicItem", menuName = "Mystica/Magic Item")]
 public class MagicItemDataSO : ScriptableObject
 {
+    public string grimorioId;
     public string itemName;
 
     [TextArea] public string description;
