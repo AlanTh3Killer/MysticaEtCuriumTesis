@@ -21082,7 +21082,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &247244076
 RectTransform:
   m_ObjectHideFlags: 0
@@ -50806,23 +50806,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4cd9ae966daa84d4a90ddb9cf395a3b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  contentManager: {fileID: 1695362504}
-  grimorioPanel: {fileID: 247244075}
-  paginas:
-  - {fileID: 669017913}
-  - {fileID: 1491924712}
-  - {fileID: 669017913}
-  - {fileID: 1491924712}
-  - {fileID: 669017913}
-  - {fileID: 1491924712}
-  - {fileID: 669017913}
-  - {fileID: 1491924712}
-  - {fileID: 669017913}
-  - {fileID: 1491924712}
-  leftPageNumberTxt: {fileID: 942697992}
-  rightPageNumberTxt: {fileID: 1870806529}
-  prevPageButton: {fileID: 378578722}
-  nextPageButton: {fileID: 888693547}
 --- !u!4 &2112838419 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5143952719116520244, guid: 66c5e5aeea678ac4fa18b5168b0b8b73, type: 3}
