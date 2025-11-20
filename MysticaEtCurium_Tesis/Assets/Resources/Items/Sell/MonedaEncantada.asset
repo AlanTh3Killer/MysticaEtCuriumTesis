@@ -10,15 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b835df412a41880429d514ef27c32a52, type: 3}
-  m_Name: OrbeMaldito
+  m_Name: MonedaEncantada
   m_EditorClassIdentifier: 
-  itemName: Orbe maldito
-  description: A veces la gente pueden ser muy rencorosa o tambien tener magia corrupta
-    muy poderosa. Sea como sea la mayoria de las orbes son una version reginada de
-    las piedras arcanas y al igual que estas pueden absorber energia magica o tambien
-    set cargadas a proposito.
-  classification: 2
-  characteristics: 0d0000000a0000000e000000
+  itemName: Moneda encantada
+  description: No importa de donde procedan estas monedas, casi siempre hay gente
+    que usa encantamientos en ellas. Creo que hay muchas en el mundo por ser magia
+    que esta al alcance de todos y casi nunca tiene repercusiones negativas....mas
+    o menos.
+  classification: 0
+  characteristics: 020000000100000002000000
   isFrozen: 0
   isBurning: 0
   hasVines: 0
+  grimorioId: 11

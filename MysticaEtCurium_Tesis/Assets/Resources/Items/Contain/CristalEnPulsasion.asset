@@ -22,3 +22,4 @@ MonoBehaviour:
   isFrozen: 0
   isBurning: 0
   hasVines: 0
+  grimorioId: 0

@@ -10,16 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b835df412a41880429d514ef27c32a52, type: 3}
-  m_Name: VasijaResonante
+  m_Name: AmuletoConsagrado
   m_EditorClassIdentifier: 
-  grimorioId: 
-  itemName: Vasija Resonante
-  description: "Estas vasijas usualmente las usan como castigo hacia otros seres
-    vivos. Pueden contener a alguien por miles y miles de a\xF1os. Aunque ese tiempo
-    pasa factura. Entre mas terrible el sello, mas se deteriora la escencia de quien
-    este atrapado en ella."
-  classification: 1
-  characteristics: 060000000900000007000000
+  itemName: Amuleto consagrado
+  description: Amuletos. Son muy populares entre paladines y clerigos, es otro de
+    los objetos ques es facil de embuir en energia benigna.
+  classification: 0
+  characteristics: 000000000200000003000000
   isFrozen: 0
   isBurning: 0
   hasVines: 0
+  grimorioId: 8

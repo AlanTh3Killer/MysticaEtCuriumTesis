@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b835df412a41880429d514ef27c32a52, type: 3}
-  m_Name: RunaDeConfinamiento
+  m_Name: OrbeResonante
   m_EditorClassIdentifier: 
-  itemName: Runa de confinamiento
-  description: Las clasicas runas de confinamiento. Son muy poderosas ya que tienen
-    el poder de atrapar la forma fisica o espiritual de otros seres. Algunos incluso
-    tambien llegan a usarlas como un recurso para defenderse de ataques magicos.
-    Hay que tener cuidado, un paso en falso y se podria liberar lo que contienen.
+  itemName: Orbe resonante
+  description: "Orbes resonantes. Son muy ritmicas pero que no te distraiga el sonido
+    hay que poner atencion en las demas se\xF1ales. Al igual que con otros objetos,
+    claro."
   classification: 1
-  characteristics: 070000000800000005000000
+  characteristics: 050000000600000009000000
   isFrozen: 0
   isBurning: 0
   hasVines: 0
+  grimorioId: 1

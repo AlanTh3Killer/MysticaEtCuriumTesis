@@ -146,8 +146,38 @@ public class GrimorioManager : MonoBehaviour
     }
 
     // Metodo de ejemplo (puedes personalizarlo)
-    public void UnlockEntry(string entryId)
+    public void UnlockEntry(int id)
     {
-        Debug.Log("[GrimorioManager] Entrada desbloqueada: " + entryId);
+        if (contentManager == null)
+        {
+            Debug.LogWarning("No hay ContentManager asignado en GrimorioManager.");
+            return;
+        }
+
+        MagicItemDataSO newEntry = FindEntryById(id);
+
+        if (newEntry != null)
+        {
+            contentManager.AddDiscoveredItem(newEntry);
+            contentManager.ShowCurrentPages();
+            Debug.Log("Entrada desbloqueada: " + newEntry.itemName);
+        }
+        else
+        {
+            Debug.LogWarning("No se encontró una entrada de grimorio con ID: " + id);
+        }
+    }
+
+    private MagicItemDataSO FindEntryById(int id)
+    {
+        MagicItemDataSO[] allItems = Resources.LoadAll<MagicItemDataSO>("");
+
+        foreach (var item in allItems)
+        {
+            if (item.grimorioId == id)
+                return item;
+        }
+
+        return null;
     }
 }
