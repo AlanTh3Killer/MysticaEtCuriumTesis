@@ -4,71 +4,77 @@ using UnityEngine;
 
 public class ItemContainer : MonoBehaviour
 {
-    [Header("Clasificacion que acepta este contenedor")]
+    [Header("Accepted classification")]
     public MagicItemDataSO.ItemClassification acceptedClassification;
 
-    [Header("Fuerza de expulsion para objetos sin script")]
+    [Header("Ejection force for objects without MagicItemBehaviour")]
     public float ejectionForce = 5f;
 
-    [Header("Tiempo antes de destruir items validos o invalidos")]
+    [Header("Destroy delay for items")]
     public float destroyDelay = 2f;
 
     private TrustSystem trustSystem;
 
     private void Start()
     {
-        trustSystem = FindObjectOfType<TrustSystem>();
+        trustSystem = FindFirstObjectByType<TrustSystem>();
     }
 
+    // Called automatically by trigger (thrown items)
     private void OnTriggerEnter(Collider other)
     {
-        // Verifica si el objeto tiene el script MagicItemBehaviour
         MagicItemBehaviour item = other.GetComponent<MagicItemBehaviour>();
-
         if (item != null)
         {
-            MagicItemDataSO data = item.data;
+            ProcessItem(item.gameObject, item.data);
+            return;
+        }
 
-            if (data != null)
-            {
-                // Verifica si la clasificacion coincide con el contenedor
-                if (data.classification == acceptedClassification)
-                {
-                    if (trustSystem != null)
-                    {
-                        trustSystem.RegistrarAcierto();
-                        GrimorioManager.Instance.UnlockEntry(item.data.grimorioId);
-                    }
-                    Debug.Log("[ItemContainer] Objeto correcto: " + data.itemName);
-                }
-                else
-                {
-                    if (trustSystem != null)
-                    {
-                        trustSystem.RegistrarError();
-                    }
-                    Debug.Log("[ItemContainer] Objeto incorrecto: " + data.itemName);
-                }
+        // If object has no item script, eject it
+        Rigidbody rb = other.attachedRigidbody;
+        if (rb != null)
+        {
+            Vector3 dir = (other.transform.position - transform.position).normalized + Vector3.up * 0.5f;
+            rb.AddForce(dir * ejectionForce, ForceMode.Impulse);
+            Debug.Log("[ItemContainer] Object without script ejected: " + other.name);
+        }
+    }
 
-                // Destruir el objeto despues de un tiempo
-                StartCoroutine(DestroyAfterDelay(other.gameObject, destroyDelay));
-            }
-            else
-            {
-                Debug.LogWarning("[ItemContainer] El objeto no tiene datos asignados en MagicItemBehaviour");
-            }
+    // Called manually by ItemInteraction
+    public void ProcessItemManual(GameObject obj)
+    {
+        MagicItemBehaviour item = obj.GetComponent<MagicItemBehaviour>();
+
+        if (item == null)
+        {
+            Debug.LogWarning("[ItemContainer] Manual process received non-item object.");
+            return;
+        }
+
+        ProcessItem(obj, item.data);
+    }
+
+    private void ProcessItem(GameObject obj, MagicItemDataSO data)
+    {
+        if (data == null)
+        {
+            Debug.LogWarning("[ItemContainer] Item has no data.");
+            return;
+        }
+
+        if (data.classification == acceptedClassification)
+        {
+            if (trustSystem != null) trustSystem.RegistrarAcierto();
+            GrimorioManager.Instance.UnlockEntry(data.grimorioId);
+            Debug.Log("[ItemContainer] Correct item: " + data.itemName);
         }
         else
         {
-            // Si no tiene MagicItemBehaviour (ejemplo: herramientas)
-            Rigidbody rb = other.attachedRigidbody;
-            if (rb != null)
-            {
-                Vector3 ejectionDirection = (other.transform.position - transform.position).normalized + Vector3.up * 0.5f;
-                rb.AddForce(ejectionDirection * ejectionForce, ForceMode.Impulse);
-                Debug.Log("[ItemContainer] Objeto sin script expulsado: " + other.name);
-            }
+            if (trustSystem != null) trustSystem.RegistrarError();
+            Debug.Log("[ItemContainer] Incorrect item: " + data.itemName);
         }
+
+        StartCoroutine(DestroyAfterDelay(obj, destroyDelay));
     }
 
     private IEnumerator DestroyAfterDelay(GameObject obj, float delay)

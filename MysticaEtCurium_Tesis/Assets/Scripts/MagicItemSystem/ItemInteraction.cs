@@ -326,6 +326,28 @@ public class ItemInteraction : MonoBehaviour
             referencia = null;
         }
     }
+
+    public void DepositHeldItemIntoContainer(ItemContainer container)
+    {
+        if (itemEnManoDerecha == null) return;
+        if (container == null) return;
+
+        GameObject itemObj = itemEnManoDerecha;
+        itemEnManoDerecha = null;
+
+        Rigidbody rb = itemObj.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        itemObj.transform.position = container.transform.position + Vector3.up * 0.5f;
+        itemObj.transform.rotation = Quaternion.identity;
+
+        container.ProcessItemManual(itemObj);
+    }
     #endregion
 
     #region ModoInspeccion

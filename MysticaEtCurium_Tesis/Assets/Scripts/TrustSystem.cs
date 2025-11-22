@@ -154,9 +154,9 @@ public class TrustSystem : MonoBehaviour
         if (panelPuntuacion == null || mostrandoPanel) return;
 
         // Buscar y desactivar scripts del jugador
-        PlayerMovement pm = FindObjectOfType<PlayerMovement>();
-        PlayerCameraController pc = FindObjectOfType<PlayerCameraController>();
-        ItemInteraction ii = FindObjectOfType<ItemInteraction>();
+        PlayerMovement pm = FindFirstObjectByType<PlayerMovement>();
+        PlayerCameraController pc = FindFirstObjectByType<PlayerCameraController>();
+        ItemInteraction ii = FindFirstObjectByType<ItemInteraction>();
 
         if (pm != null) pm.enabled = false;
         if (pc != null) pc.enabled = false;

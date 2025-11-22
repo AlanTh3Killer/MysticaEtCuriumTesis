@@ -6,7 +6,7 @@ public class SuccessFailsTest : MonoBehaviour
 
     private void Start()
     {
-        trustSystem = FindObjectOfType<TrustSystem>();
+        trustSystem = FindFirstObjectByType<TrustSystem>();
     }
 
     void Update()

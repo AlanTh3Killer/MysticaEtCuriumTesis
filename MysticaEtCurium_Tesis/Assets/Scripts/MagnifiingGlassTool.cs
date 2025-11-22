@@ -26,7 +26,6 @@ public class MagnifiingGlassTool : MonoBehaviour
     {
         mainCam = Camera.main;
 
-        // crear RT y asignarlo a la cámara secundaria y al rawimage
         rt = new RenderTexture(renderTextureSize, renderTextureSize, 16, RenderTextureFormat.ARGB32);
         rt.Create();
 
@@ -44,8 +43,8 @@ public class MagnifiingGlassTool : MonoBehaviour
             lupaRawImage.rectTransform.sizeDelta = lupaSize;
         }
 
-        // cachear auras en escena (para MVP). Puedes optimizar con registro dinámico.
-        var found = FindObjectsOfType<AuraComponent>();
+        // get all AuraComponent in scene
+        var found = FindObjectsByType<AuraComponent>(FindObjectsSortMode.None);
         allAuras.AddRange(found);
     }
 
