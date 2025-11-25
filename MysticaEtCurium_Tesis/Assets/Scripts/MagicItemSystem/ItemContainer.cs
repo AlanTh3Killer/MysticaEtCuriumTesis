@@ -45,13 +45,32 @@ public class ItemContainer : MonoBehaviour
     {
         MagicItemBehaviour item = obj.GetComponent<MagicItemBehaviour>();
 
-        if (item == null)
+        if (item != null && item.data != null)
         {
-            Debug.LogWarning("[ItemContainer] Manual process received non-item object.");
-            return;
-        }
+            if (item.data.classification == acceptedClassification)
+            {
+                trustSystem.RegistrarAcierto();
+                GrimorioManager.Instance.UnlockEntry(item.data.grimorioId);
+                Debug.Log("Item correcto: " + item.data.itemName);
+            }
+            else
+            {
+                trustSystem.RegistrarError();
+                Debug.Log("Item incorrecto: " + item.data.itemName);
+            }
 
-        ProcessItem(obj, item.data);
+            StartCoroutine(DestroyAfterDelay(obj, destroyDelay));
+        }
+        else
+        {
+            Rigidbody rb = obj.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                Vector3 dir = (obj.transform.position - transform.position).normalized + Vector3.up * 0.5f;
+                rb.AddForce(dir * ejectionForce, ForceMode.Impulse);
+            }
+            Debug.Log("Objeto sin script expulsado: " + obj.name);
+        }
     }
 
     private void ProcessItem(GameObject obj, MagicItemDataSO data)

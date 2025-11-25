@@ -16,6 +16,8 @@ public class ContainerPlayerPrompt : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log("Player detected by container trigger");
+
         if (other.CompareTag("Player"))
         {
             playerInteraction = other.GetComponent<ItemInteraction>();
@@ -41,12 +43,14 @@ public class ContainerPlayerPrompt : MonoBehaviour
 
     private void Update()
     {
+
         if (!playerInRange) return;
         if (playerInteraction == null) return;
 
         // Player presses E to deposit
         if (Input.GetKeyDown(KeyCode.E))
         {
+        Debug.Log("Pressed E inside container range");
             playerInteraction.DepositHeldItemIntoContainer(container);
         }
     }

@@ -332,21 +332,27 @@ public class ItemInteraction : MonoBehaviour
         if (itemEnManoDerecha == null) return;
         if (container == null) return;
 
-        GameObject itemObj = itemEnManoDerecha;
+        GameObject obj = itemEnManoDerecha;
         itemEnManoDerecha = null;
 
-        Rigidbody rb = itemObj.GetComponent<Rigidbody>();
+        // Remove parent FIRST to fully detach the item
+        obj.transform.SetParent(null);
+
+        Rigidbody rb = obj.GetComponent<Rigidbody>();
         if (rb != null)
         {
-            rb.isKinematic = true;
+            rb.isKinematic = false;
+            rb.useGravity = true;
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
 
-        itemObj.transform.position = container.transform.position + Vector3.up * 0.5f;
-        itemObj.transform.rotation = Quaternion.identity;
+        // Position the item on top of the container
+        obj.transform.position = container.transform.position + Vector3.up * 0.5f;
+        obj.transform.rotation = Quaternion.identity;
 
-        container.ProcessItemManual(itemObj);
+        // Now let the container process it
+        container.ProcessItemManual(obj);
     }
     #endregion
 
