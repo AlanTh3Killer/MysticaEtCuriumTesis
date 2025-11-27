@@ -13,14 +13,14 @@ public class DialogueSystem : MonoBehaviour
     [SerializeField] private TMP_Text speakerName;
     [SerializeField] private string nombrePersonaje = "Morgana";
 
-    [Header("Configuración de diálogo")]
+    [Header("Configuraciï¿½n de diï¿½logo")]
     [TextArea(3, 6)]
     public string[] lineasDialogo;
 
     private int indiceDialogo = 0;
     private bool dialogoActivo = false;
 
-    // Referencias al jugador (para bloquear movimiento/cámara)
+    // Referencias al jugador (para bloquear movimiento/cï¿½mara)
     private PlayerMovement playerMovement;
     private PlayerCameraController cameraController;
 
@@ -34,47 +34,50 @@ public class DialogueSystem : MonoBehaviour
         if (player != null)
         {
             playerMovement = player.GetComponent<PlayerMovement>();
-            cameraController = player.GetComponentInChildren<PlayerCameraController>(); // más confiable
+            cameraController = player.GetComponentInChildren<PlayerCameraController>(); // mï¿½s confiable
         }
         else
         {
-            Debug.LogWarning("No se encontró el objeto con tag 'Player' en la escena.");
+            Debug.LogWarning("No se encontrï¿½ el objeto con tag 'Player' en la escena.");
         }
+
+        IniciarDialogo();
+
     }
 
     private void Update()
     {
         if (dialogoActivo && Input.GetKeyDown(KeyCode.E))
         {
-            if (isPaused) return; // Evita que avance el diálogo durante la pausa
+            if (isPaused) return; // Evita que avance el diï¿½logo durante la pausa
             MostrarSiguienteLinea();
         }
     }
 
     public void IniciarDialogo()
     {
-        if (dialogoActivo) return; // Evita reiniciar el diálogo si ya está activo
+        if (dialogoActivo) return; // Evita reiniciar el diï¿½logo si ya estï¿½ activo
 
         if (lineasDialogo == null || lineasDialogo.Length == 0)
         {
-            Debug.LogWarning("El NPC no tiene líneas de diálogo asignadas.");
+            Debug.LogWarning("El NPC no tiene lï¿½neas de diï¿½logo asignadas.");
             return;
         }
 
-        // Aseguramos que empiece desde la primera línea real
+        // Aseguramos que empiece desde la primera lï¿½nea real
         indiceDialogo = 0;
         dialogoActivo = true;
         dialoguePanel.SetActive(true);
 
-        // Bloqueamos movimiento y cámara
+        // Bloqueamos movimiento y cï¿½mara
         if (playerMovement != null) playerMovement.enabled = false;
         if (cameraController != null) cameraController.enabled = false;
-        else Debug.LogWarning("No se encontró PlayerCameraController dentro del Player.");
+        else Debug.LogWarning("No se encontrï¿½ PlayerCameraController dentro del Player.");
 
         if (speakerName != null)
             speakerName.text = nombrePersonaje;
 
-        // Mostramos la primera línea sin avanzar el índice todavía
+        // Mostramos la primera lï¿½nea sin avanzar el ï¿½ndice todavï¿½a
         MostrarLineaActual();
     }
 
@@ -117,10 +120,10 @@ public class DialogueSystem : MonoBehaviour
         dialogoActivo = false;
         dialoguePanel.SetActive(false);
 
-        // Restauramos movimiento y cámara
+        // Restauramos movimiento y cï¿½mara
         if (playerMovement != null) playerMovement.enabled = true;
         if (cameraController != null) cameraController.enabled = true;
 
-        Debug.Log("Diálogo terminado.");
+        Debug.Log("Diï¿½logo terminado.");
     }
 }

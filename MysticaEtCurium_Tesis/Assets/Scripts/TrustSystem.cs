@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class TrustSystem : MonoBehaviour
 {
-    [Header("Configuración de puntos")]
+    [Header("Configuraciï¿½n de puntos")]
     [SerializeField] private int puntosActuales = 0;
     [SerializeField] private int puntosPorAcierto = 25;
     [SerializeField] private int puntosPorError = 15;
@@ -26,7 +26,7 @@ public class TrustSystem : MonoBehaviour
     [SerializeField] private TextMeshProUGUI textoValorAcierto;
     [SerializeField] private TextMeshProUGUI textoValorFallo;
 
-    [Header("Panel de puntuación")]
+    [Header("Panel de puntuaciï¿½n")]
     [SerializeField] private GameObject panelPuntuacion;
     [SerializeField] private float tiempoVisible = 5f;
 
@@ -49,6 +49,8 @@ public class TrustSystem : MonoBehaviour
 
     public void RegistrarAcierto()
     {
+        FindFirstObjectByType<SimpleDialogueTrigger>()?.NotifyCorrect();
+
         totalAciertos++;
         puntosActuales += puntosPorAcierto;
         if (puntosActuales < 0) puntosActuales = 0;
@@ -61,6 +63,8 @@ public class TrustSystem : MonoBehaviour
 
     public void RegistrarError()
     {
+        FindFirstObjectByType<SimpleDialogueTrigger>()?.NotifyError();
+
         totalErrores++;
         puntosActuales -= puntosPorError;
         if (puntosActuales < 0) puntosActuales = 0;
@@ -106,7 +110,7 @@ public class TrustSystem : MonoBehaviour
         if (textoBalance != null)
             textoBalance.text = $"Balance diario: {balance}";
 
-        //  Aquí está el cambio importante:
+        //  Aquï¿½ estï¿½ el cambio importante:
         // Mostrar el valor TOTAL ganado y perdido
         if (textoValorAcierto != null)
             textoValorAcierto.text = $"+{totalGanado}";
@@ -162,7 +166,7 @@ public class TrustSystem : MonoBehaviour
         if (pc != null) pc.enabled = false;
         if (ii != null) ii.enabled = false;
 
-        Debug.Log("[TrustSystem] Jugador bloqueado. Mostrando panel de puntuación...");
+        Debug.Log("[TrustSystem] Jugador bloqueado. Mostrando panel de puntuaciï¿½n...");
 
         ActualizarNivelDesdePuntos();
         ActualizarUI();

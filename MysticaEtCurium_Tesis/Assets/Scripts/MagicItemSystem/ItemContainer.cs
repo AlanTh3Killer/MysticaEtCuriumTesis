@@ -14,13 +14,14 @@ public class ItemContainer : MonoBehaviour
     public float destroyDelay = 2f;
 
     private TrustSystem trustSystem;
+    private ItemSpawner spawner;
 
     private void Start()
     {
+        spawner = FindFirstObjectByType<ItemSpawner>();
         trustSystem = FindFirstObjectByType<TrustSystem>();
     }
 
-    // Called automatically by trigger (thrown items)
     private void OnTriggerEnter(Collider other)
     {
         MagicItemBehaviour item = other.GetComponent<MagicItemBehaviour>();
@@ -30,7 +31,6 @@ public class ItemContainer : MonoBehaviour
             return;
         }
 
-        // If object has no item script, eject it
         Rigidbody rb = other.attachedRigidbody;
         if (rb != null)
         {
@@ -40,7 +40,6 @@ public class ItemContainer : MonoBehaviour
         }
     }
 
-    // Called manually by ItemInteraction
     public void ProcessItemManual(GameObject obj)
     {
         MagicItemBehaviour item = obj.GetComponent<MagicItemBehaviour>();
@@ -49,13 +48,13 @@ public class ItemContainer : MonoBehaviour
         {
             if (item.data.classification == acceptedClassification)
             {
-                trustSystem.RegistrarAcierto();
+                if (trustSystem != null) trustSystem.RegistrarAcierto();
                 GrimorioManager.Instance.UnlockEntry(item.data.grimorioId);
                 Debug.Log("Item correcto: " + item.data.itemName);
             }
             else
             {
-                trustSystem.RegistrarError();
+                if (trustSystem != null) trustSystem.RegistrarError();
                 Debug.Log("Item incorrecto: " + item.data.itemName);
             }
 
@@ -99,9 +98,16 @@ public class ItemContainer : MonoBehaviour
     private IEnumerator DestroyAfterDelay(GameObject obj, float delay)
     {
         yield return new WaitForSeconds(delay);
+
         if (obj != null)
         {
             Destroy(obj);
+        }
+
+        // Notify the spawner to create a new item
+        if (spawner != null)
+        {
+            spawner.NotifyItemDestroyed();
         }
     }
 }

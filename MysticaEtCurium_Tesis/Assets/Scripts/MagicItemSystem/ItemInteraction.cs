@@ -62,6 +62,8 @@ public class ItemInteraction : MonoBehaviour
         // --- MODO INSPECCIÓN ---
         if (Input.GetKeyDown(inputInspeccion))
         {
+            FindFirstObjectByType<SimpleDialogueTrigger>()?.PlayDialogue();
+
             if (enModoInspeccion) SalirModoInspeccion();
             else EntrarModoInspeccion();
         }
@@ -361,16 +363,12 @@ public class ItemInteraction : MonoBehaviour
     {
         enModoInspeccion = true;
 
-        // Teletransportar al jugador a la posición de inspección
+        FindFirstObjectByType<SimpleTutorialDirector>()?.NotifyInspectionStarted();
+
         transform.position = posicionInspeccion.position;
         transform.rotation = posicionInspeccion.rotation;
 
-        // Bloquear movimiento
         if (characterController != null) characterController.enabled = false;
-
-        // Activar UI / modo inspección
-        Debug.Log("Modo inspección activado.");
-        // Aquí luego podrías activar un script de rotación de objeto, etc.
     }
 
     void SalirModoInspeccion()
