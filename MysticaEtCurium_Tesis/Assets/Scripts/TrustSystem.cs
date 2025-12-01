@@ -47,9 +47,17 @@ public class TrustSystem : MonoBehaviour
         Debug.Log($"[TrustSystem] Start -> Nivel: {nivelActual}, Puntos: {puntosActuales}");
     }
 
+    private bool firstCorrectTriggered = false;
+
     public void RegistrarAcierto()
     {
         FindFirstObjectByType<SimpleDialogueTrigger>()?.NotifyCorrect();
+
+        if (!firstCorrectTriggered)
+        {
+            FindFirstObjectByType<SimpleDialogueTrigger>()?.NotifyFirstCorrect();
+            firstCorrectTriggered = true;
+        }
 
         totalAciertos++;
         puntosActuales += puntosPorAcierto;
@@ -58,7 +66,7 @@ public class TrustSystem : MonoBehaviour
         ActualizarNivelDesdePuntos();
         ActualizarUI();
 
-        Debug.Log($"[TrustSystem] Acierto +{puntosPorAcierto} -> Puntos: {puntosActuales} | Nivel: {nivelActual} | Aciertos: {totalAciertos}");
+        Debug.Log("[TrustSystem] Acierto registrado");
     }
 
     public void RegistrarError()

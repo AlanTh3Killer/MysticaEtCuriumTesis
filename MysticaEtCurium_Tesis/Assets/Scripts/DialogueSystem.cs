@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -23,9 +24,12 @@ public class DialogueSystem : MonoBehaviour
     // Referencias al jugador (para bloquear movimiento/c�mara)
     private PlayerMovement playerMovement;
     private PlayerCameraController cameraController;
+    private ItemInteraction itemInteraction;
 
     private void Start()
     {
+        itemInteraction = FindFirstObjectByType<ItemInteraction>();
+
         if (dialoguePanel != null)
             dialoguePanel.SetActive(false);
 
@@ -41,7 +45,7 @@ public class DialogueSystem : MonoBehaviour
             Debug.LogWarning("No se encontr� el objeto con tag 'Player' en la escena.");
         }
 
-        IniciarDialogo();
+        //IniciarDialogo();
 
     }
 
@@ -56,6 +60,9 @@ public class DialogueSystem : MonoBehaviour
 
     public void IniciarDialogo()
     {
+        if (itemInteraction != null)
+            itemInteraction.enabled = false;
+
         if (dialogoActivo) return; // Evita reiniciar el di�logo si ya est� activo
 
         if (lineasDialogo == null || lineasDialogo.Length == 0)
@@ -78,6 +85,29 @@ public class DialogueSystem : MonoBehaviour
             speakerName.text = nombrePersonaje;
 
         // Mostramos la primera l�nea sin avanzar el �ndice todav�a
+        MostrarLineaActual();
+    }
+
+    public void IniciarDialogoConLineas(string[] nuevasLineas)
+    {
+        if (itemInteraction != null)
+            itemInteraction.enabled = false;
+
+        if (dialogoActivo) return;
+
+        lineasDialogo = nuevasLineas;
+        indiceDialogo = 0;
+        dialogoActivo = true;
+        DialogueSystem.DialogoActivo = true;
+
+        dialoguePanel.SetActive(true);
+
+        if (playerMovement != null) playerMovement.enabled = false;
+        if (cameraController != null) cameraController.enabled = false;
+
+        if (speakerName != null)
+            speakerName.text = nombrePersonaje;
+
         MostrarLineaActual();
     }
 
@@ -118,12 +148,37 @@ public class DialogueSystem : MonoBehaviour
     void TerminarDialogo()
     {
         dialogoActivo = false;
+        DialogueSystem.DialogoActivo = false;
+
         dialoguePanel.SetActive(false);
 
-        // Restauramos movimiento y c�mara
-        if (playerMovement != null) playerMovement.enabled = true;
-        if (cameraController != null) cameraController.enabled = true;
+        if (playerMovement != null)
+            playerMovement.enabled = true;
 
-        Debug.Log("Di�logo terminado.");
+        if (cameraController != null)
+            cameraController.enabled = true;
+
+        if (itemInteraction != null)
+            itemInteraction.enabled = true;
+
+        Debug.Log("Diálogo terminado. Controles restaurados.");
+    }
+
+    public void ReproducirDialogoTemporal(string[] lines)
+    {
+        StopAllCoroutines();
+        dialoguePanel.SetActive(true);
+        StartCoroutine(RunTemporaryDialogue(lines));
+    }
+
+    private IEnumerator RunTemporaryDialogue(string[] lines)
+    {
+        for (int i = 0; i < lines.Length; i++)
+        {
+            dialogueText.text = lines[i];
+            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
+        }
+
+        dialoguePanel.SetActive(false);
     }
 }

@@ -4,6 +4,8 @@ public class SimpleDialogueTrigger : MonoBehaviour
 {
     public DialogueSystem dialogue;
 
+    private bool firstCorrectShown = false;
+
     public void PlayDialogue()
     {
         if (dialogue == null)
@@ -16,23 +18,56 @@ public class SimpleDialogueTrigger : MonoBehaviour
             dialogue.IniciarDialogo();
     }
 
-    // ====== MÉTODOS QUE ESPERAN OTROS SCRIPTS ======
-
     public void NotifyCorrect()
     {
-        Debug.Log("[SimpleDialogueTrigger] Correcto detectado");
-        PlayDialogue();
+        if (dialogue == null) return;
+
+        dialogue.IniciarDialogoConLineas(
+            new string[]
+            {
+                "Buen trabajo.",
+                "Este objeto estaba bien clasificado."
+            }
+        );
     }
 
     public void NotifyError()
     {
-        Debug.Log("[SimpleDialogueTrigger] Error detectado");
-        PlayDialogue();
+        if (dialogue == null) return;
+
+        dialogue.IniciarDialogoConLineas(
+            new string[]
+            {
+                "No. Ese objeto era incorrecto.",
+                "Presta mas atencion."
+            }
+        );
     }
 
     public void NotifyInspect()
     {
-        Debug.Log("[SimpleDialogueTrigger] Inspección iniciada");
-        PlayDialogue();
+        if (dialogue == null) return;
+
+        dialogue.IniciarDialogoConLineas(
+            new string[]
+            {
+                "Muy bien, inspecciona con cuidado.",
+                "Usa la lupa si es necesario."
+            }
+        );
+    }
+
+    public void NotifyFirstCorrect()
+    {
+        if (firstCorrectShown) return;
+        firstCorrectShown = true;
+
+        dialogue.IniciarDialogoConLineas(
+            new string[]
+            {
+                "Veo que has acertado por primera vez.",
+                "Bien. Sigue así."
+            }
+        );
     }
 }
