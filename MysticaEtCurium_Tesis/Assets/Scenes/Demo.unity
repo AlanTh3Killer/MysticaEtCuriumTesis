@@ -18544,6 +18544,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: MesaDeTrabajo
       objectReference: {fileID: 0}
+    - target: {fileID: 304719676989296924, guid: 9d2b03f44db50084cbdf08bb0f66a017, type: 3}
+      propertyPath: m_TagString
+      value: PuntoInspeccion
+      objectReference: {fileID: 0}
     - target: {fileID: 2196510382470374417, guid: 9d2b03f44db50084cbdf08bb0f66a017, type: 3}
       propertyPath: m_Mesh
       value: 

@@ -21,6 +21,7 @@ public class SimpleDialogueTrigger : MonoBehaviour
     public void NotifyCorrect()
     {
         if (dialogue == null) return;
+        if (DialogueSystem.DialogoActivo) return;
 
         dialogue.IniciarDialogoConLineas(
             new string[]
@@ -34,6 +35,7 @@ public class SimpleDialogueTrigger : MonoBehaviour
     public void NotifyError()
     {
         if (dialogue == null) return;
+        if (DialogueSystem.DialogoActivo) return;
 
         dialogue.IniciarDialogoConLineas(
             new string[]
@@ -47,6 +49,7 @@ public class SimpleDialogueTrigger : MonoBehaviour
     public void NotifyInspect()
     {
         if (dialogue == null) return;
+        if (DialogueSystem.DialogoActivo) return;
 
         dialogue.IniciarDialogoConLineas(
             new string[]
@@ -59,14 +62,17 @@ public class SimpleDialogueTrigger : MonoBehaviour
 
     public void NotifyFirstCorrect()
     {
+        if (dialogue == null) return;
+        if (DialogueSystem.DialogoActivo) return;
         if (firstCorrectShown) return;
+
         firstCorrectShown = true;
 
         dialogue.IniciarDialogoConLineas(
             new string[]
             {
                 "Veo que has acertado por primera vez.",
-                "Bien. Sigue así."
+                "Bien. Sigue asi."
             }
         );
     }

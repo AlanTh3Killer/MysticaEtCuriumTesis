@@ -49,6 +49,9 @@ public class ItemInteraction : MonoBehaviour
 
     private CharacterController characterController; // si usas este
 
+    // Nueva bandera: dialogo solo la primera vez
+    private bool primeraVezInspeccion = true;
+
     private void Start()
     {
         characterController = GetComponent<CharacterController>();
@@ -59,13 +62,25 @@ public class ItemInteraction : MonoBehaviour
         if (DialogueSystem.DialogoActivo)
             return;
 
-        // --- MODO INSPECCIÓN ---
+        // MODO INSPECCION
         if (Input.GetKeyDown(inputInspeccion))
         {
-            FindFirstObjectByType<SimpleDialogueTrigger>()?.PlayDialogue();
+            // Entrar
+            if (!enModoInspeccion)
+            {
+                if (primeraVezInspeccion)
+                {
+                    FindFirstObjectByType<SimpleDialogueTrigger>()?.PlayDialogue();
+                    primeraVezInspeccion = false;
+                }
 
-            if (enModoInspeccion) SalirModoInspeccion();
-            else EntrarModoInspeccion();
+                EntrarModoInspeccion();
+            }
+            // Salir
+            else
+            {
+                SalirModoInspeccion();
+            }
         }
 
         // --- Colocar objeto en punto de inspección ---
@@ -198,15 +213,21 @@ public class ItemInteraction : MonoBehaviour
         return characterController.velocity.magnitude > umbralMovimiento;
     }
 
+    // DETECCION REPARADA (mesaLayer incluido)
     void DetectarObjetoFrente()
     {
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
         RaycastHit hit;
 
-        // Combina layers para detectar items y NPCs en el mismo raycast
-        if (Physics.Raycast(ray, out hit, interactionDistance, itemLayer | npcLayer))
+        // Unir todas las capas que queremos detectar en un solo mask
+        int mask = (itemLayer.value) | (npcLayer.value) | (mesaLayer.value);
+
+        if (Physics.Raycast(ray, out hit, interactionDistance, mask))
         {
             string tag = hit.collider.tag;
+
+            // DEBUG: ayuda a ver que se esta golpeando
+            Debug.Log("[DetectarObjetoFrente] Hit: " + hit.collider.name + " tag: " + tag);
 
             // --- Items ---
             if (tag.StartsWith("Item"))
@@ -216,6 +237,7 @@ public class ItemInteraction : MonoBehaviour
 
                 if (itemFeedbackUI != null) itemFeedbackUI.SetActive(true);
                 if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(false);
+                if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(false);
                 return;
             }
             // --- Herramientas ---
@@ -226,34 +248,36 @@ public class ItemInteraction : MonoBehaviour
 
                 if (itemFeedbackUI != null) itemFeedbackUI.SetActive(false);
                 if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(true);
+                if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(false);
                 return;
             }
-            // --- Punto de inspección ---
+            // --- Punto de inspeccion ---
             else if (tag == "PuntoInspeccion")
             {
                 objetoDetectado = hit.collider.gameObject;
                 tagDetectado = tag;
 
                 if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(true);
+                if (itemFeedbackUI != null) itemFeedbackUI.SetActive(false);
+                if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(false);
                 return;
             }
-
             // --- NPC ---
             else if (tag == "NPC")
             {
                 objetoDetectado = hit.collider.gameObject;
                 tagDetectado = tag;
 
-                itemFeedbackUI?.SetActive(false);
-                herramientaFeedbackUI?.SetActive(false);
-                iniciarInspeccionFeedbackUI?.SetActive(false);
+                if (itemFeedbackUI != null) itemFeedbackUI.SetActive(false);
+                if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(false);
+                if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(false);
 
                 Debug.Log("NPC detectado: " + hit.collider.name);
                 return;
             }
         }
 
-        // --- Si no detecta nada válido ---
+        // Si no detecta nada valido
         objetoDetectado = null;
         tagDetectado = "";
 
@@ -362,9 +386,6 @@ public class ItemInteraction : MonoBehaviour
     void EntrarModoInspeccion()
     {
         enModoInspeccion = true;
-
-        FindFirstObjectByType<SimpleTutorialDirector>()?.NotifyInspectionStarted();
-
         transform.position = posicionInspeccion.position;
         transform.rotation = posicionInspeccion.rotation;
 
@@ -375,11 +396,7 @@ public class ItemInteraction : MonoBehaviour
     {
         enModoInspeccion = false;
 
-        // Restaurar movimiento
         if (characterController != null) characterController.enabled = true;
-
-        // Desactivar UI / modo inspección
-        Debug.Log("Modo inspección desactivado.");
     }
     #endregion
 
