@@ -28,7 +28,7 @@ public class DialogueSystem : MonoBehaviour
 
     private void Start()
     {
-        itemInteraction = FindFirstObjectByType<ItemInteraction>();
+        FindFirstObjectByType<SimpleDialogueTrigger>()?.IntroDialogue();
 
         if (dialoguePanel != null)
             dialoguePanel.SetActive(false);
@@ -46,6 +46,7 @@ public class DialogueSystem : MonoBehaviour
         }
 
         //IniciarDialogo();
+        FindFirstObjectByType<SimpleDialogueTrigger>()?.IntroDialogue();
 
     }
 
