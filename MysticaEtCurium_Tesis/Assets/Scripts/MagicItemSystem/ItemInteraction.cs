@@ -1,8 +1,12 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ItemInteraction : MonoBehaviour
 {
+    [Header("UI de Inspección")]
+    [SerializeField] private TextMeshProUGUI inspectionStatusText; // Texto que muestra características descubiertas
+
     [Header("Configuración")]
     [SerializeField] private Transform cameraTransform;
     [SerializeField] private float interactionDistance = 3f;
@@ -43,18 +47,21 @@ public class ItemInteraction : MonoBehaviour
 
     [Header("Física de lanzamiento")]
     [SerializeField] private float fuerzaArrojar = 10f;
-    [SerializeField] private float umbralMovimiento = 0.2f; // Cuánta velocidad del jugador cuenta como "moverse"
+    [SerializeField] private float umbralMovimiento = 0.2f;
 
     public bool enModoInspeccion { get; private set; } = false;
 
-    private CharacterController characterController; // si usas este
-
-    // Nueva bandera: dialogo solo la primera vez
+    private CharacterController characterController;
     private bool primeraVezInspeccion = true;
 
     private void Start()
     {
         characterController = GetComponent<CharacterController>();
+
+        // Asegurar que los feedbacks estén desactivados al inicio
+        if (itemFeedbackUI != null) itemFeedbackUI.SetActive(false);
+        if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(false);
+        if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(false);
     }
 
     void Update()
@@ -65,7 +72,6 @@ public class ItemInteraction : MonoBehaviour
         // MODO INSPECCION
         if (Input.GetKeyDown(inputInspeccion))
         {
-            // Entrar
             if (!enModoInspeccion)
             {
                 if (primeraVezInspeccion)
@@ -73,10 +79,8 @@ public class ItemInteraction : MonoBehaviour
                     FindFirstObjectByType<SimpleDialogueTrigger>()?.PlayDialogue();
                     primeraVezInspeccion = false;
                 }
-
                 EntrarModoInspeccion();
             }
-            // Salir
             else
             {
                 SalirModoInspeccion();
@@ -89,7 +93,7 @@ public class ItemInteraction : MonoBehaviour
             Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
             if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance))
             {
-                if (hit.collider.CompareTag("PuntoInspeccion")) // Asegúrate que este tag esté bien asignado
+                if (hit.collider.CompareTag("PuntoInspeccion"))
                 {
                     itemEnManoDerecha.transform.position = puntoDeInspeccion.position;
                     itemEnManoDerecha.transform.rotation = puntoDeInspeccion.rotation;
@@ -105,6 +109,13 @@ public class ItemInteraction : MonoBehaviour
                     objetoEnMesa = itemEnManoDerecha;
                     itemEnManoDerecha = null;
                     objetoEnInspeccion = true;
+
+                    //  NUEVO: Iniciar tracking de inspección
+                    MagicItemBehaviour magicItem = objetoEnMesa.GetComponent<MagicItemBehaviour>();
+                    if (magicItem != null && InspectionTracker.Instance != null)
+                    {
+                        InspectionTracker.Instance.StartInspection(magicItem);
+                    }
                 }
             }
         }
@@ -121,7 +132,7 @@ public class ItemInteraction : MonoBehaviour
         // --- DETECCIÓN DE OBJETO FRENTE ---
         DetectarObjetoFrente();
 
-        // --- INTERACCIÓN GENERAL (E) ---MANO DERECHA (objetos)
+        // --- INTERACCIÓN GENERAL (E) - MANO DERECHA (objetos) ---
         if (Input.GetKeyDown(KeyCode.E) && !recogidaDesdeInspeccion)
         {
             if (itemEnManoDerecha == null && objetoDetectado != null && tagDetectado.StartsWith("Item"))
@@ -163,10 +174,9 @@ public class ItemInteraction : MonoBehaviour
             }
         }
 
-        // --- Colocar con clics ---
+        // --- Uso de herramientas (Lupa mágica) ---
         if (enModoInspeccion && Input.GetMouseButtonDown(0) && herramientaEnManoIzquierda != null)
         {
-            // si la herramienta en la mano es la lupa, iniciar uso
             if (herramientaEnManoIzquierda.GetComponent<MagnifiingGlassTool>() != null)
             {
                 lupaTool = herramientaEnManoIzquierda.GetComponent<MagnifiingGlassTool>();
@@ -183,7 +193,13 @@ public class ItemInteraction : MonoBehaviour
             lupaTool = null;
         }
 
-        if (Input.GetMouseButtonDown(0) && itemEnManoDerecha != null)
+        if (Input.GetMouseButtonDown(1) && enModoInspeccion && herramientaEnManoIzquierda != null)
+        {
+            UsarHerramientaEnObjeto();
+        }
+
+        // --- Colocar con clics (esto parece duplicado, revisar) ---
+        if (Input.GetMouseButtonDown(0) && itemEnManoDerecha != null && !objetoEnInspeccion)
         {
             ColocarEnMesa(itemEnManoDerecha, ref itemEnManoDerecha);
         }
@@ -204,6 +220,25 @@ public class ItemInteraction : MonoBehaviour
         }
 
         recogidaDesdeInspeccion = false;
+
+        // --- Actualizar UI de estado de inspección ---
+        if (enModoInspeccion && objetoEnInspeccion && InspectionTracker.Instance != null)
+        {
+            if (inspectionStatusText != null)
+            {
+                int discovered = InspectionTracker.Instance.GetDiscoveredCount();
+                bool canClassify = InspectionTracker.Instance.CanClassify(out string reason);
+
+                if (canClassify)
+                    inspectionStatusText.text = $"Características: {discovered} ✓\nListo para clasificar";
+                else
+                    inspectionStatusText.text = $"Características: {discovered}\n{reason}";
+            }
+        }
+        else if (inspectionStatusText != null)
+        {
+            inspectionStatusText.text = "";
+        }
     }
 
     #region Interaccion
@@ -213,56 +248,42 @@ public class ItemInteraction : MonoBehaviour
         return characterController.velocity.magnitude > umbralMovimiento;
     }
 
-    // DETECCION REPARADA (mesaLayer incluido)
+    //  FIX PRINCIPAL: Detección separada para feedback UI
     void DetectarObjetoFrente()
     {
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
         RaycastHit hit;
 
-        // Unir todas las capas que queremos detectar en un solo mask
-        int mask = (itemLayer.value) | (npcLayer.value) | (mesaLayer.value);
+        // PRIMERA PASADA: Solo detectar items, herramientas y NPCs para feedback
+        int feedbackMask = itemLayer.value | npcLayer.value;
 
-        if (Physics.Raycast(ray, out hit, interactionDistance, mask))
+        if (Physics.Raycast(ray, out hit, interactionDistance, feedbackMask))
         {
             string tag = hit.collider.tag;
 
-            // DEBUG: ayuda a ver que se esta golpeando
-            Debug.Log("[DetectarObjetoFrente] Hit: " + hit.collider.name + " tag: " + tag);
-
-            // --- Items ---
+            // Items
             if (tag.StartsWith("Item"))
             {
                 objetoDetectado = hit.collider.gameObject;
                 tagDetectado = tag;
 
-                if (itemFeedbackUI != null) itemFeedbackUI.SetActive(true);
+                if (itemFeedbackUI != null) itemFeedbackUI.SetActive(itemEnManoDerecha == null);
                 if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(false);
                 if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(false);
                 return;
             }
-            // --- Herramientas ---
+            // Herramientas
             else if (tag == "Herramienta")
             {
                 objetoDetectado = hit.collider.gameObject;
                 tagDetectado = tag;
 
                 if (itemFeedbackUI != null) itemFeedbackUI.SetActive(false);
-                if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(true);
+                if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(herramientaEnManoIzquierda == null);
                 if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(false);
                 return;
             }
-            // --- Punto de inspeccion ---
-            else if (tag == "PuntoInspeccion")
-            {
-                objetoDetectado = hit.collider.gameObject;
-                tagDetectado = tag;
-
-                if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(true);
-                if (itemFeedbackUI != null) itemFeedbackUI.SetActive(false);
-                if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(false);
-                return;
-            }
-            // --- NPC ---
+            // NPC
             else if (tag == "NPC")
             {
                 objetoDetectado = hit.collider.gameObject;
@@ -271,13 +292,26 @@ public class ItemInteraction : MonoBehaviour
                 if (itemFeedbackUI != null) itemFeedbackUI.SetActive(false);
                 if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(false);
                 if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(false);
-
-                Debug.Log("NPC detectado: " + hit.collider.name);
                 return;
             }
         }
 
-        // Si no detecta nada valido
+        // SEGUNDA PASADA: Detectar punto de inspección (necesita estar en mesaLayer)
+        if (Physics.Raycast(ray, out hit, interactionDistance, mesaLayer))
+        {
+            if (hit.collider.CompareTag("PuntoInspeccion"))
+            {
+                objetoDetectado = hit.collider.gameObject;
+                tagDetectado = "PuntoInspeccion";
+
+                if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(itemEnManoDerecha != null);
+                if (itemFeedbackUI != null) itemFeedbackUI.SetActive(false);
+                if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(false);
+                return;
+            }
+        }
+
+        // Si no detecta nada válido
         objetoDetectado = null;
         tagDetectado = "";
 
@@ -304,7 +338,9 @@ public class ItemInteraction : MonoBehaviour
         obj.transform.localPosition = Vector3.zero;
         obj.transform.localRotation = Quaternion.identity;
 
+        // Desactivar feedback al recoger
         if (itemFeedbackUI != null) itemFeedbackUI.SetActive(false);
+        if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(false);
     }
 
     void ArrojarObjeto(GameObject obj, ref GameObject referencia)
@@ -319,11 +355,8 @@ public class ItemInteraction : MonoBehaviour
             rb.isKinematic = false;
             rb.useGravity = true;
 
-            // Fuerza hacia adelante + ligera aleatoriedad para realismo
             Vector3 direccion = cameraTransform.forward + new Vector3(Random.Range(-0.05f, 0.05f), Random.Range(0f, 0.05f), 0);
             rb.AddForce(direccion.normalized * fuerzaArrojar, ForceMode.Impulse);
-
-            // Pequeño torque para rotación
             rb.AddTorque(Random.insideUnitSphere * 2f, ForceMode.Impulse);
         }
 
@@ -340,7 +373,7 @@ public class ItemInteraction : MonoBehaviour
             Quaternion rotacion = Quaternion.LookRotation(hit.normal) * Quaternion.Euler(90, 0, 0);
 
             obj.transform.SetParent(null);
-            obj.transform.position = posicion + Vector3.up * 0.05f; // levemente encima de la mesa
+            obj.transform.position = posicion + Vector3.up * 0.05f;
             obj.transform.rotation = rotacion;
 
             Collider col = obj.GetComponent<Collider>();
@@ -358,10 +391,28 @@ public class ItemInteraction : MonoBehaviour
         if (itemEnManoDerecha == null) return;
         if (container == null) return;
 
+        //  VALIDAR si se puede clasificar
+        if (InspectionTracker.Instance != null)
+        {
+            bool canClassify = InspectionTracker.Instance.CanClassify(out string reason);
+
+            if (!canClassify)
+            {
+                Debug.LogWarning($"[ItemInteraction] No se puede clasificar: {reason}");
+                // Mostrar feedback visual al jugador
+                if (inspectionStatusText != null)
+                {
+                    inspectionStatusText.text = $"¡ERROR!\n{reason}";
+                    CancelInvoke("ClearInspectionStatus");
+                    Invoke("ClearInspectionStatus", 2f);
+                }
+                return;
+            }
+        }
+
         GameObject obj = itemEnManoDerecha;
         itemEnManoDerecha = null;
 
-        // Remove parent FIRST to fully detach the item
         obj.transform.SetParent(null);
 
         Rigidbody rb = obj.GetComponent<Rigidbody>();
@@ -373,12 +424,20 @@ public class ItemInteraction : MonoBehaviour
             rb.angularVelocity = Vector3.zero;
         }
 
-        // Position the item on top of the container
         obj.transform.position = container.transform.position + Vector3.up * 0.5f;
         obj.transform.rotation = Quaternion.identity;
 
-        // Now let the container process it
         container.ProcessItemManual(obj);
+
+        //  Limpiar tracking
+        if (InspectionTracker.Instance != null)
+            InspectionTracker.Instance.ClearInspection();
+    }
+
+    private void ClearInspectionStatus()
+    {
+        if (inspectionStatusText != null)
+            inspectionStatusText.text = "";
     }
     #endregion
 
@@ -398,6 +457,19 @@ public class ItemInteraction : MonoBehaviour
 
         if (characterController != null) characterController.enabled = true;
     }
+
+    private void UsarHerramientaEnObjeto()
+    {
+        if (herramientaEnManoIzquierda == null || objetoEnMesa == null) return;
+
+        SimpleTool tool = herramientaEnManoIzquierda.GetComponent<SimpleTool>();
+        if (tool == null) return;
+
+        MagicItemBehaviour item = objetoEnMesa.GetComponent<MagicItemBehaviour>();
+        if (item == null) return;
+
+        tool.UseToolOnObject(item);
+    }
     #endregion
 
     #region DebugVisual
@@ -413,5 +485,4 @@ public class ItemInteraction : MonoBehaviour
 #endif
     }
     #endregion
-
 }

@@ -6,28 +6,23 @@ public class GrimorioManager : MonoBehaviour
 {
     public static GrimorioManager Instance { get; private set; }
 
-    public GrimorioContentManager contentManager;
-
     [Header("Panel Principal del Grimorio")]
     public GameObject grimorioPanel;
 
-    [Header("Paginas individuales (en orden)")]
-    public GameObject[] paginas;
+    [Header("UI de página")]
+    public TextMeshProUGUI itemNameText;
+    public TextMeshProUGUI itemDescriptionText;
+    public TextMeshProUGUI itemClassificationText;
+    public TextMeshProUGUI characteristicsText;
+    public TextMeshProUGUI pageNumberText;
 
-    [Header("Textos de numero de pagina (izquierda y derecha)")]
-    public TextMeshProUGUI leftPageNumberTxt;
-    public TextMeshProUGUI rightPageNumberTxt;
+    [Header("Objetos descubiertos")]
+    private System.Collections.Generic.List<MagicItemDataSO> discoveredItems = new System.Collections.Generic.List<MagicItemDataSO>();
+    private int currentIndex = 0;
 
-    [Header("Botones de navegacion")]
-    public Button prevPageButton;
-    public Button nextPageButton;
-
-    [Header("Referencias del jugador")]
     private PlayerMovement playerMovement;
     private PlayerCameraController playerCamera;
     private ItemInteraction itemInteraction;
-
-    private int paginaActual = 0;
     private bool grimorioActivo = false;
 
     void Awake()
@@ -44,9 +39,6 @@ public class GrimorioManager : MonoBehaviour
     {
         grimorioPanel.SetActive(false);
 
-        if (prevPageButton != null) prevPageButton.onClick.AddListener(PaginaAnterior);
-        if (nextPageButton != null) nextPageButton.onClick.AddListener(SiguientePagina);
-
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
@@ -54,8 +46,6 @@ public class GrimorioManager : MonoBehaviour
             playerCamera = player.GetComponentInChildren<PlayerCameraController>();
             itemInteraction = player.GetComponent<ItemInteraction>();
         }
-
-        ActualizarPaginas();
     }
 
     void Update()
@@ -71,11 +61,6 @@ public class GrimorioManager : MonoBehaviour
 
     void AbrirGrimorio()
     {
-        if (contentManager != null)
-        {
-            contentManager.ShowCurrentPages();
-        }
-
         grimorioPanel.SetActive(true);
         grimorioActivo = true;
 
@@ -85,6 +70,8 @@ public class GrimorioManager : MonoBehaviour
 
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
+
+        ShowCurrentPage();
     }
 
     void CerrarGrimorio()
@@ -100,84 +87,118 @@ public class GrimorioManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
     }
 
-    void PaginaAnterior()
+    // MÉTODOS PÚBLICOS PARA TU SISTEMA DE BOTONES
+    public void GrimorioNextPage()
     {
-        paginaActual -= 2;
-        if (paginaActual < 0)
-            paginaActual = Mathf.Max(0, paginas.Length - 2);
+        if (discoveredItems.Count == 0) return;
 
-        ActualizarPaginas();
-        if (contentManager != null)
-            contentManager.PreviousPage();
+        currentIndex++;
+        if (currentIndex >= discoveredItems.Count)
+            currentIndex = 0;
+
+        ShowCurrentPage();
     }
 
-    void SiguientePagina()
+    public void GrimorioPreviousPage()
     {
-        paginaActual += 2;
-        if (paginaActual >= paginas.Length)
-            paginaActual = 0;
+        if (discoveredItems.Count == 0) return;
 
-        ActualizarPaginas();
-        if (contentManager != null)
-            contentManager.NextPage();
+        currentIndex--;
+        if (currentIndex < 0)
+            currentIndex = discoveredItems.Count - 1;
+
+        ShowCurrentPage();
     }
 
-    void ActualizarPaginas()
+    void ShowCurrentPage()
     {
-        for (int i = 0; i < paginas.Length; i++)
+        if (discoveredItems.Count == 0)
         {
-            paginas[i].SetActive(false);
-        }
-
-        paginas[paginaActual].SetActive(true);
-        if (paginaActual + 1 < paginas.Length)
-            paginas[paginaActual + 1].SetActive(true);
-
-        if (leftPageNumberTxt != null)
-            leftPageNumberTxt.text = (paginaActual + 1).ToString();
-
-        if (rightPageNumberTxt != null)
-        {
-            if (paginaActual + 1 < paginas.Length)
-                rightPageNumberTxt.text = (paginaActual + 2).ToString();
-            else
-                rightPageNumberTxt.text = "-";
-        }
-    }
-
-    // Metodo de ejemplo (puedes personalizarlo)
-    public void UnlockEntry(int id)
-    {
-        if (contentManager == null)
-        {
-            Debug.LogWarning("No hay ContentManager asignado en GrimorioManager.");
+            if (itemNameText != null) itemNameText.text = "Grimorio Vacío";
+            if (itemDescriptionText != null) itemDescriptionText.text = "Clasifica objetos correctamente para desbloquear entradas.";
+            if (itemClassificationText != null) itemClassificationText.text = "";
+            if (characteristicsText != null) characteristicsText.text = "";
+            if (pageNumberText != null) pageNumberText.text = "0 / 0";
             return;
         }
 
-        MagicItemDataSO newEntry = FindEntryById(id);
+        MagicItemDataSO item = discoveredItems[currentIndex];
 
-        if (newEntry != null)
+        if (itemNameText != null)
+            itemNameText.text = item.itemName;
+
+        if (itemDescriptionText != null)
+            itemDescriptionText.text = item.description;
+
+        if (itemClassificationText != null)
+            itemClassificationText.text = $"<b>Clasificación:</b> {item.classification}";
+
+        // Mostrar características
+        if (characteristicsText != null)
         {
-            contentManager.AddDiscoveredItem(newEntry);
-            contentManager.ShowCurrentPages();
-            Debug.Log("Entrada desbloqueada: " + newEntry.itemName);
+            string chars = "<b>Características identificables:</b>\n\n";
+            foreach (var c in item.characteristics)
+            {
+                chars += $"• {GetCharacteristicName(c)}\n";
+            }
+            characteristicsText.text = chars;
         }
-        else
+
+        if (pageNumberText != null)
+            pageNumberText.text = $"{currentIndex + 1} / {discoveredItems.Count}";
+    }
+
+    // Método público para desbloquear entrada
+    public void UnlockEntry(MagicItemDataSO item)
+    {
+        if (item == null) return;
+
+        if (!discoveredItems.Contains(item))
         {
-            Debug.LogWarning("No se encontró una entrada de grimorio con ID: " + id);
+            discoveredItems.Add(item);
+            Debug.Log($"[Grimorio] Entrada desbloqueada: {item.itemName}");
         }
     }
 
-    private MagicItemDataSO FindEntryById(int id)
+    // Sobrecarga para mantener compatibilidad con código existente
+    public void UnlockEntry(int grimorioId)
     {
         MagicItemDataSO[] allItems = Resources.LoadAll<MagicItemDataSO>("");
 
         foreach (var item in allItems)
         {
-            if (item.grimorioId == id)
-                return item;
+            if (item.grimorioId == grimorioId)
+            {
+                UnlockEntry(item);
+                return;
+            }
         }
 
-        return null;
+        Debug.LogWarning($"[Grimorio] No se encontró item con grimorioId: {grimorioId}");
+    }
+
+    private string GetCharacteristicName(ItemCharacteristic c)
+    {
+        switch (c)
+        {
+            case ItemCharacteristic.RunasBenignasVisibles: return "Runas benignas visibles";
+            case ItemCharacteristic.SonidoArcanoNormal: return "Sonido arcano normal";
+            case ItemCharacteristic.SinRunas: return "Sin runas";
+            case ItemCharacteristic.AuraBlanca: return "Aura blanca";
+            case ItemCharacteristic.SinAura: return "Sin aura";
+            case ItemCharacteristic.SonidoRitmico: return "Sonido rítmico";
+            case ItemCharacteristic.AuraNaranja: return "Aura naranja";
+            case ItemCharacteristic.RunasInvocacion: return "Runas de invocación";
+            case ItemCharacteristic.RunasDefensivas: return "Runas defensivas";
+            case ItemCharacteristic.EnergiaInestable: return "Energía inestable";
+            case ItemCharacteristic.VocesEspectrales: return "Voces espectrales";
+            case ItemCharacteristic.VocesDemoníacas: return "Voces demoníacas";
+            case ItemCharacteristic.AuraRoja: return "Aura roja";
+            case ItemCharacteristic.AuraOscura: return "Aura oscura";
+            case ItemCharacteristic.RunasMalignas: return "Runas malignas";
+            case ItemCharacteristic.LlamasDemoníacas: return "Llamas demoníacas";
+            case ItemCharacteristic.MovimientoEspontáneo: return "Movimiento espontáneo";
+            default: return c.ToString();
+        }
     }
 }

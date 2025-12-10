@@ -14,22 +14,20 @@ public class DialogueSystem : MonoBehaviour
     [SerializeField] private TMP_Text speakerName;
     [SerializeField] private string nombrePersonaje = "Morgana";
 
-    [Header("Configuraci�n de di�logo")]
+    [Header("Configuración de diálogo")]
     [TextArea(3, 6)]
     public string[] lineasDialogo;
 
     private int indiceDialogo = 0;
     private bool dialogoActivo = false;
 
-    // Referencias al jugador (para bloquear movimiento/c�mara)
+    // Referencias al jugador
     private PlayerMovement playerMovement;
     private PlayerCameraController cameraController;
     private ItemInteraction itemInteraction;
 
     private void Start()
     {
-        FindFirstObjectByType<SimpleDialogueTrigger>()?.IntroDialogue();
-
         if (dialoguePanel != null)
             dialoguePanel.SetActive(false);
 
@@ -38,73 +36,67 @@ public class DialogueSystem : MonoBehaviour
         if (player != null)
         {
             playerMovement = player.GetComponent<PlayerMovement>();
-            cameraController = player.GetComponentInChildren<PlayerCameraController>(); // m�s confiable
+            cameraController = player.GetComponentInChildren<PlayerCameraController>();
+            itemInteraction = player.GetComponent<ItemInteraction>();
         }
         else
         {
-            Debug.LogWarning("No se encontr� el objeto con tag 'Player' en la escena.");
+            Debug.LogWarning("No se encontró el objeto con tag 'Player' en la escena.");
         }
 
-        //IniciarDialogo();
+        // SOLO UNA LLAMADA AL DIÁLOGO DE INTRO
         FindFirstObjectByType<SimpleDialogueTrigger>()?.IntroDialogue();
-
     }
 
     private void Update()
     {
         if (dialogoActivo && Input.GetKeyDown(KeyCode.E))
         {
-            if (isPaused) return; // Evita que avance el di�logo durante la pausa
+            if (isPaused) return;
             MostrarSiguienteLinea();
         }
     }
 
     public void IniciarDialogo()
     {
-        if (itemInteraction != null)
-            itemInteraction.enabled = false;
-
-        if (dialogoActivo) return; // Evita reiniciar el di�logo si ya est� activo
+        if (dialogoActivo) return;
 
         if (lineasDialogo == null || lineasDialogo.Length == 0)
         {
-            Debug.LogWarning("El NPC no tiene l�neas de di�logo asignadas.");
+            Debug.LogWarning("El NPC no tiene líneas de diálogo asignadas.");
             return;
         }
 
-        // Aseguramos que empiece desde la primera l�nea real
         indiceDialogo = 0;
         dialogoActivo = true;
+        DialogoActivo = true;
         dialoguePanel.SetActive(true);
 
-        // Bloqueamos movimiento y c�mara
+        // Bloquear controles
         if (playerMovement != null) playerMovement.enabled = false;
         if (cameraController != null) cameraController.enabled = false;
-        else Debug.LogWarning("No se encontr� PlayerCameraController dentro del Player.");
+        if (itemInteraction != null) itemInteraction.enabled = false;
 
         if (speakerName != null)
             speakerName.text = nombrePersonaje;
 
-        // Mostramos la primera l�nea sin avanzar el �ndice todav�a
         MostrarLineaActual();
     }
 
     public void IniciarDialogoConLineas(string[] nuevasLineas)
     {
-        if (itemInteraction != null)
-            itemInteraction.enabled = false;
-
         if (dialogoActivo) return;
 
         lineasDialogo = nuevasLineas;
         indiceDialogo = 0;
         dialogoActivo = true;
-        DialogueSystem.DialogoActivo = true;
+        DialogoActivo = true;
 
         dialoguePanel.SetActive(true);
 
         if (playerMovement != null) playerMovement.enabled = false;
         if (cameraController != null) cameraController.enabled = false;
+        if (itemInteraction != null) itemInteraction.enabled = false;
 
         if (speakerName != null)
             speakerName.text = nombrePersonaje;
@@ -133,7 +125,6 @@ public class DialogueSystem : MonoBehaviour
 
     void MostrarSiguienteLinea()
     {
-        // Avanzamos solo cuando el jugador presiona E nuevamente
         indiceDialogo++;
 
         if (indiceDialogo < lineasDialogo.Length)
@@ -149,7 +140,7 @@ public class DialogueSystem : MonoBehaviour
     void TerminarDialogo()
     {
         dialogoActivo = false;
-        DialogueSystem.DialogoActivo = false;
+        DialogoActivo = false;
 
         dialoguePanel.SetActive(false);
 
