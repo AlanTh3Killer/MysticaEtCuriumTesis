@@ -27,8 +27,9 @@ public class SimpleDialogueTrigger : MonoBehaviour
             {
                 "Bueno, este sera el primer dia de prueba.",
                 "Se que en teoria deberias saber que es lo que hay que hacer, pero dado a los recientes acontecimientos no voy a tomar riesgos.",
-                "Toma alguno de los objetos que te puse en el suelo.",
-                "Una vez lo tomes, traelo de vuelta a la mesa de inspeccion.",
+                "Puedes empezar con los items del suelo",
+                "Los demas iran apareciendo cuando termines con alguno de los que ya estan",
+                "Una vez que tomes un item, traelo de vuelta a la mesa de inspeccion.",
                 "(F cerca de mesa de inspeccion.)"            }
         );
     }

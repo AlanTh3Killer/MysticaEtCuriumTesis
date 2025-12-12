@@ -16,7 +16,7 @@ MonoBehaviour:
   description: Amuletos. Son muy populares entre paladines y clerigos, es otro de
     los objetos ques es facil de embuir en energia benigna.
   classification: 0
-  characteristics: 000000000200000003000000
+  characteristics: 000000000100000003000000
   isFrozen: 0
   isBurning: 0
   hasVines: 0

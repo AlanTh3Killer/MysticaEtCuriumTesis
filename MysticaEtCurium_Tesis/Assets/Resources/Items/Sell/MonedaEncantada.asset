@@ -18,7 +18,7 @@ MonoBehaviour:
     que esta al alcance de todos y casi nunca tiene repercusiones negativas....mas
     o menos.
   classification: 0
-  characteristics: 020000000100000002000000
+  characteristics: 020000000100000004000000
   isFrozen: 0
   isBurning: 0
   hasVines: 0
