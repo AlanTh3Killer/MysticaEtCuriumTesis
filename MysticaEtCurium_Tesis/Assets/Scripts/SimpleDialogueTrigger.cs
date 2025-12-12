@@ -4,6 +4,8 @@ public class SimpleDialogueTrigger : MonoBehaviour
 {
     public DialogueSystem dialogue;
 
+    private bool introShown = false;
+    private bool firstInspectShown = false;
     private bool firstCorrectShown = false;
 
     public void PlayDialogue()
@@ -18,9 +20,13 @@ public class SimpleDialogueTrigger : MonoBehaviour
             dialogue.IniciarDialogo();
     }
 
+    // FIX: Solo se llama UNA VEZ al inicio
     public void IntroDialogue()
     {
         if (dialogue == null) return;
+        if (introShown) return; // ← ESTO EVITA REPETICIÓN
+
+        introShown = true;
 
         dialogue.IniciarDialogoConLineas(
             new string[]
@@ -30,42 +36,18 @@ public class SimpleDialogueTrigger : MonoBehaviour
                 "Puedes empezar con los items del suelo",
                 "Los demas iran apareciendo cuando termines con alguno de los que ya estan",
                 "Una vez que tomes un item, traelo de vuelta a la mesa de inspeccion.",
-                "(F cerca de mesa de inspeccion.)"            }
-        );
-    }
-    public void NotifyCorrect()
-    {
-        if (dialogue == null) return;
-
-        dialogue.IniciarDialogoConLineas(
-            new string[]
-            {"Veo que has acertado por primera vez.",
-                "Bien. Sigue as�.",
-                "Me tome la molestia de darte un cuaderno que toma notas.",
-                "A ver si asi dejas de cometer errores.",
-                "(Tab para abrir grimorio)"
-                //"Buen trabajo.",
-                //"Este objeto estaba bien clasificado."
+                "(F cerca de mesa de inspeccion.)"
             }
         );
     }
 
-    public void NotifyError()
-    {
-        if (dialogue == null) return;
-
-        dialogue.IniciarDialogoConLineas(
-            new string[]
-            {
-                "No. Ese objeto era incorrecto.",
-                "Presta mas atencion."
-            }
-        );
-    }
-
+    // FIX: Diálogo de inspección solo la primera vez
     public void NotifyInspect()
     {
         if (dialogue == null) return;
+        if (firstInspectShown) return; // ← EVITA REPETICIÓN
+
+        firstInspectShown = true;
 
         dialogue.IniciarDialogoConLineas(
             new string[]
@@ -75,7 +57,7 @@ public class SimpleDialogueTrigger : MonoBehaviour
                 "Pero la proxima vez tendras que usar tus herramientas para descubrir por ti mismo el tipo de objeto.",
                 "(Click Izquierdo en el centro de la mesa para colocar objeto en modo inspeccion)",
                 "(Click Derecho mientras se sostiene una herramienta para usarla en el objeto a inspeccionar)",
-                "Una vez inspeccionado, debes llevar el objeto a uno de los contenedores de all�.",
+                "Una vez inspeccionado, debes llevar el objeto a uno de los contenedores de allá.",
                 "Colocalo en el contenedor correcto",
                 "(E para tomar el objeto inspeccionado)",
                 "(F para salir del modo inspeccion)"
@@ -92,10 +74,37 @@ public class SimpleDialogueTrigger : MonoBehaviour
             new string[]
             {
                 "Veo que has acertado por primera vez.",
-                "Bien. Sigue as�.",
+                "Bien. Sigue así.",
                 "Me tome la molestia de darte un cuaderno que toma notas.",
                 "A ver si asi dejas de cometer errores.",
                 "(Tab para abrir grimorio)"
+            }
+        );
+    }
+
+    // Estos se pueden repetir
+    public void NotifyCorrect()
+    {
+        if (dialogue == null) return;
+
+        dialogue.IniciarDialogoConLineas(
+            new string[]
+            {
+                "Bien hecho.",
+                "Continua así."
+            }
+        );
+    }
+
+    public void NotifyError()
+    {
+        if (dialogue == null) return;
+
+        dialogue.IniciarDialogoConLineas(
+            new string[]
+            {
+                "No. Ese objeto era incorrecto.",
+                "Presta mas atencion."
             }
         );
     }

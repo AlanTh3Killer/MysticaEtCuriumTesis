@@ -115,6 +115,8 @@ public class ItemInteraction : MonoBehaviour
                     if (magicItem != null && InspectionTracker.Instance != null)
                     {
                         InspectionTracker.Instance.StartInspection(magicItem);
+                        //NUEVO: Llamar diálogo de inspección
+                        FindFirstObjectByType<SimpleDialogueTrigger>()?.NotifyInspect();
                     }
                 }
             }
@@ -402,9 +404,12 @@ public class ItemInteraction : MonoBehaviour
                 // Mostrar feedback visual al jugador
                 if (inspectionStatusText != null)
                 {
-                    inspectionStatusText.text = $"¡ERROR!\n{reason}";
+                    inspectionStatusText.color = Color.red; // ← Texto rojo
+                    inspectionStatusText.fontSize = 24; // ← Más grande
+                    inspectionStatusText.text = $"⚠️ ¡ERROR!\n\n{reason}\n\nUsa las herramientas primero";
+
                     CancelInvoke("ClearInspectionStatus");
-                    Invoke("ClearInspectionStatus", 2f);
+                    Invoke("ClearInspectionStatus", 3f); // ← Más tiempo visible
                 }
                 return;
             }
@@ -437,7 +442,16 @@ public class ItemInteraction : MonoBehaviour
     private void ClearInspectionStatus()
     {
         if (inspectionStatusText != null)
+        {
             inspectionStatusText.text = "";
+            inspectionStatusText.color = Color.white; // ← Restaurar color
+            inspectionStatusText.fontSize = 18; // ← Restaurar tamaño
+        }
+    }
+
+    public bool HasItemInRightHand()
+    {
+        return itemEnManoDerecha != null;
     }
     #endregion
 

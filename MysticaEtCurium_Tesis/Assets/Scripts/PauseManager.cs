@@ -1,15 +1,16 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PauseManager : MonoBehaviour
 {
     public static bool JuegoPausado = false;
 
     [Header("Referencias")]
-    [SerializeField] private GameObject menuPausa; // Panel del men˙ de pausa
+    [SerializeField] private GameObject menuPausa;
     [SerializeField] private PlayerMovement playerMovement;
     [SerializeField] private PlayerCameraController playerCameraController;
     [SerializeField] private DayNightCycle dayNightCycle;
-    [SerializeField] private ItemInteraction itemInteraction; // NUEVO: referencia al script de interacciÛn
+    [SerializeField] private ItemInteraction itemInteraction;
     [SerializeField] private DialogueSystem dialogueSystem;
 
     private bool dialogoActivoAntesDePausa = false;
@@ -18,6 +19,14 @@ public class PauseManager : MonoBehaviour
     {
         if (menuPausa != null)
             menuPausa.SetActive(false);
+
+        // ‚úÖ FIX: Asegurar cursor desbloqueado si estamos en men√∫
+        if (SceneManager.GetActiveScene().name.Contains("Menu") ||
+            SceneManager.GetActiveScene().name.Contains("MainMenu"))
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
     }
 
     void Update()
@@ -39,7 +48,6 @@ public class PauseManager : MonoBehaviour
         if (menuPausa != null)
             menuPausa.SetActive(true);
 
-        // Guardamos si habÌa un di·logo activo
         if (dialogueSystem != null)
         {
             dialogoActivoAntesDePausa = dialogueSystem.dialoguePanel.activeSelf;
@@ -47,20 +55,12 @@ public class PauseManager : MonoBehaviour
                 dialogueSystem.dialoguePanel.SetActive(false);
         }
 
-        // Desactivar control del jugador
-        if (playerMovement != null)
-            playerMovement.enabled = false;
+        if (playerMovement != null) playerMovement.enabled = false;
+        if (playerCameraController != null) playerCameraController.enabled = false;
+        if (itemInteraction != null) itemInteraction.enabled = false;
+        if (dayNightCycle != null) dayNightCycle.enabled = false;
 
-        if (playerCameraController != null)
-            playerCameraController.enabled = false;
-
-        // Desactivar interacciÛn
-        if (itemInteraction != null)
-            itemInteraction.enabled = false;
-
-        if (dayNightCycle != null)
-            dayNightCycle.enabled = false;
-
+        // ‚úÖ FIX: Desbloquear cursor INMEDIATAMENTE
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
@@ -73,20 +73,11 @@ public class PauseManager : MonoBehaviour
         if (menuPausa != null)
             menuPausa.SetActive(false);
 
-        // Reactivar control del jugador
-        if (playerMovement != null)
-            playerMovement.enabled = true;
+        if (playerMovement != null) playerMovement.enabled = true;
+        if (playerCameraController != null) playerCameraController.enabled = true;
+        if (itemInteraction != null) itemInteraction.enabled = true;
+        if (dayNightCycle != null) dayNightCycle.enabled = true;
 
-        if (playerCameraController != null)
-            playerCameraController.enabled = true;
-
-        if (itemInteraction != null)
-            itemInteraction.enabled = true;
-
-        if (dayNightCycle != null)
-            dayNightCycle.enabled = true;
-
-        // Si habÌa di·logo activo antes de pausar, lo restauramos
         if (dialogueSystem != null && dialogoActivoAntesDePausa)
         {
             dialogueSystem.dialoguePanel.SetActive(true);
@@ -95,5 +86,18 @@ public class PauseManager : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
+
+    // ‚úÖ NUEVO: M√©todo para salir al men√∫ principal
+    public void SalirAlMenuPrincipal()
+    {
+        Time.timeScale = 1f; // ‚Üê CR√çTICO: Restaurar tiempo
+        JuegoPausado = false;
+
+        // Desbloquear cursor ANTES de cambiar escena
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        SceneManager.LoadScene("MainMenu"); // ‚Üê Cambia por el nombre de tu escena de men√∫
     }
 }

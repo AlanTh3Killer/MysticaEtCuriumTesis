@@ -16,16 +16,23 @@ public class ContainerPlayerPrompt : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("Player detected by container trigger");
-
         if (other.CompareTag("Player"))
         {
             playerInteraction = other.GetComponent<ItemInteraction>();
-            if (playerInteraction != null && promptUI != null)
+            if (playerInteraction != null)
             {
-                promptUI.SetActive(true);
                 playerInRange = true;
+                UpdatePromptVisibility();
             }
+        }
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        //  FIX: Actualizar constantemente mientras el jugador está en rango
+        if (other.CompareTag("Player") && playerInRange)
+        {
+            UpdatePromptVisibility();
         }
     }
 
@@ -43,15 +50,21 @@ public class ContainerPlayerPrompt : MonoBehaviour
 
     private void Update()
     {
-
-        if (!playerInRange) return;
-        if (playerInteraction == null) return;
+        if (!playerInRange || playerInteraction == null) return;
 
         // Player presses E to deposit
         if (Input.GetKeyDown(KeyCode.E))
         {
-        Debug.Log("Pressed E inside container range");
             playerInteraction.DepositHeldItemIntoContainer(container);
         }
+    }
+
+    //  NUEVO: Mostrar prompt solo si tiene objeto en mano
+    private void UpdatePromptVisibility()
+    {
+        if (promptUI == null || playerInteraction == null) return;
+
+        bool hasItem = playerInteraction.HasItemInRightHand();
+        promptUI.SetActive(hasItem);
     }
 }
