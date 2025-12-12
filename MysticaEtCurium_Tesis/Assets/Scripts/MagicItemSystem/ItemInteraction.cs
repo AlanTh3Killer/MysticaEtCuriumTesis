@@ -76,7 +76,7 @@ public class ItemInteraction : MonoBehaviour
             {
                 if (primeraVezInspeccion)
                 {
-                    FindFirstObjectByType<SimpleDialogueTrigger>()?.PlayDialogue();
+                    FindFirstObjectByType<SimpleDialogueTrigger>()?.NotifyInspect();
                     primeraVezInspeccion = false;
                 }
                 EntrarModoInspeccion();
@@ -116,7 +116,7 @@ public class ItemInteraction : MonoBehaviour
                     {
                         InspectionTracker.Instance.StartInspection(magicItem);
                         //NUEVO: Llamar diálogo de inspección
-                        FindFirstObjectByType<SimpleDialogueTrigger>()?.NotifyInspect();
+                        //FindFirstObjectByType<SimpleDialogueTrigger>()?.NotifyInspect();
                     }
                 }
             }

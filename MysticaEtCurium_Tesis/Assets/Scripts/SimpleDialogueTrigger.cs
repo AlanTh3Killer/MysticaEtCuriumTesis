@@ -53,8 +53,7 @@ public class SimpleDialogueTrigger : MonoBehaviour
             new string[]
             {
                 "Muy bien, inspecciona con cuidado.",
-                "Por ahora no te voy a presionar, ya tienes la solucion en tus manos.",
-                "Pero la proxima vez tendras que usar tus herramientas para descubrir por ti mismo el tipo de objeto.",
+                "Tienes que identificar con las herramientas de la mesa ciertas detalles del objeto",
                 "(Click Izquierdo en el centro de la mesa para colocar objeto en modo inspeccion)",
                 "(Click Derecho mientras se sostiene una herramienta para usarla en el objeto a inspeccionar)",
                 "Una vez inspeccionado, debes llevar el objeto a uno de los contenedores de allá.",
