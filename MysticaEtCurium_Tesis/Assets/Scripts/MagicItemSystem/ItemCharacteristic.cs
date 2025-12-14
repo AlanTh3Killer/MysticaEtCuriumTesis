@@ -13,10 +13,10 @@ public enum ItemCharacteristic
     RunasDefensivas,
     EnergiaInestable,
     VocesEspectrales,
-    VocesDemoníacas,
+    VocesDemoniacas,
     AuraRoja,
     AuraOscura,
     RunasMalignas,
-    LlamasDemoníacas,
-    MovimientoEspontáneo
+    LlamasDemoniacas,
+    MovimientoEspontaneo
 }

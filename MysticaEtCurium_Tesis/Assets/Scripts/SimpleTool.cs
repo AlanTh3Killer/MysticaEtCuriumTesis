@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class SimpleTool : MonoBehaviour
 {
-    [Header("Configuración de herramienta")]
+    [Header("Configuraciï¿½n de herramienta")]
     public string toolName = "Herramienta";
     public List<ItemCharacteristic> canDetect = new List<ItemCharacteristic>();
 
@@ -29,7 +29,6 @@ public class SimpleTool : MonoBehaviour
             return;
         }
 
-        // Buscar características que esta herramienta puede detectar
         List<ItemCharacteristic> detected = new List<ItemCharacteristic>();
 
         foreach (var characteristic in item.data.characteristics)
@@ -40,29 +39,33 @@ public class SimpleTool : MonoBehaviour
             }
         }
 
-        //  REGISTRAR EN EL TRACKER
         if (detected.Count > 0 && InspectionTracker.Instance != null)
         {
             InspectionTracker.Instance.RegisterDiscoveredCharacteristics(detected);
         }
 
-        // Mostrar resultado
         if (detected.Count > 0)
         {
-            string message = $"<b>{toolName} detectó:</b>\n\n";
+            string message = $"<b>{toolName} detectÃ³:</b>\n\n";
             foreach (var c in detected)
             {
-                message += $"? {GetCharacteristicName(c)}\n";
+                message += $"âœ“ {GetCharacteristicName(c)}\n";
             }
             ShowMessage(message);
 
-            // Sonido de descubrimiento
+            // âœ… FIX: Solo mostrar feedback en el OBJETO, no en la herramienta
+            if (FeedbackManager.Instance != null)
+            {
+                FeedbackManager.Instance.ShowDiscoveryFeedback(item.transform.position);
+                FeedbackManager.Instance.HighlightObject(item.gameObject, 0.3f);
+            }
+
             if (audioSource != null && discoverySound != null)
                 audioSource.PlayOneShot(discoverySound);
         }
         else
         {
-            ShowMessage($"{toolName}: No se detectó nada relevante");
+            ShowMessage($"{toolName}: No se detectÃ³ nada relevante");
         }
     }
 
@@ -94,18 +97,18 @@ public class SimpleTool : MonoBehaviour
             case ItemCharacteristic.SinRunas: return "Sin runas";
             case ItemCharacteristic.AuraBlanca: return "Aura blanca";
             case ItemCharacteristic.SinAura: return "Sin aura";
-            case ItemCharacteristic.SonidoRitmico: return "Sonido rítmico";
+            case ItemCharacteristic.SonidoRitmico: return "Sonido rï¿½tmico";
             case ItemCharacteristic.AuraNaranja: return "Aura naranja";
-            case ItemCharacteristic.RunasInvocacion: return "Runas de invocación";
+            case ItemCharacteristic.RunasInvocacion: return "Runas de invocaciï¿½n";
             case ItemCharacteristic.RunasDefensivas: return "Runas defensivas";
-            case ItemCharacteristic.EnergiaInestable: return "Energía inestable";
+            case ItemCharacteristic.EnergiaInestable: return "Energï¿½a inestable";
             case ItemCharacteristic.VocesEspectrales: return "Voces espectrales";
-            case ItemCharacteristic.VocesDemoníacas: return "Voces demoníacas";
+            case ItemCharacteristic.VocesDemoniacas: return "Voces demonï¿½acas";
             case ItemCharacteristic.AuraRoja: return "Aura roja";
             case ItemCharacteristic.AuraOscura: return "Aura oscura";
             case ItemCharacteristic.RunasMalignas: return "Runas malignas";
-            case ItemCharacteristic.LlamasDemoníacas: return "Llamas demoníacas";
-            case ItemCharacteristic.MovimientoEspontáneo: return "Movimiento espontáneo";
+            case ItemCharacteristic.LlamasDemoniacas: return "Llamas demonï¿½acas";
+            case ItemCharacteristic.MovimientoEspontaneo: return "Movimiento espontï¿½neo";
             default: return c.ToString();
         }
     }

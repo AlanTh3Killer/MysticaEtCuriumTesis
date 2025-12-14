@@ -11,35 +11,17 @@ public class ContainerPlayerPrompt : MonoBehaviour
     private void Start()
     {
         if (promptUI != null)
-        {
             promptUI.SetActive(false);
-            Debug.Log($"[Container] PromptUI inicializado: {promptUI.name}");
-        }
-        else
-        {
-            Debug.LogError("[Container] PromptUI es NULL!");
-        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"[Container] Trigger Enter - Objeto: {other.name}, Tag: {other.tag}");
-
         if (other.CompareTag("Player"))
         {
-            Debug.Log("[Container] ¡Player detectado!");
-
             playerInteraction = other.GetComponent<ItemInteraction>();
-
             if (playerInteraction != null)
             {
-                Debug.Log("[Container] ItemInteraction encontrado");
                 playerInRange = true;
-                UpdatePromptVisibility();
-            }
-            else
-            {
-                Debug.LogError("[Container] ItemInteraction NO encontrado en player!");
             }
         }
     }
@@ -54,8 +36,6 @@ public class ContainerPlayerPrompt : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        Debug.Log($"[Container] Trigger Exit - Objeto: {other.name}");
-
         if (other.CompareTag("Player"))
         {
             if (promptUI != null)
@@ -64,19 +44,28 @@ public class ContainerPlayerPrompt : MonoBehaviour
             playerInRange = false;
             playerInteraction = null;
         }
+
     }
 
+    // ✅ FIX: Mover la lógica a Update para que se actualice constantemente
     private void Update()
     {
-        if (!playerInRange || playerInteraction == null) return;
-
-        if (Input.GetKeyDown(KeyCode.E))
+        if (!playerInRange || playerInteraction == null)
         {
-            if (playerInteraction.HasItemInRightHand())
-            {
-                Debug.Log("[Container] Depositando item...");
-                playerInteraction.DepositHeldItemIntoContainer(container);
-            }
+            if (promptUI != null && promptUI.activeSelf)
+                promptUI.SetActive(false);
+            return;
+        }
+
+        // Actualizar visibilidad del prompt constantemente
+        bool hasItem = playerInteraction.HasItemInRightHand();
+        if (promptUI != null)
+            promptUI.SetActive(hasItem);
+
+        // Detectar input para depositar
+        if (Input.GetKeyDown(KeyCode.E) && hasItem)
+        {
+            playerInteraction.DepositHeldItemIntoContainer(container);
         }
     }
 

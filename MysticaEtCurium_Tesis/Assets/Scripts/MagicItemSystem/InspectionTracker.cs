@@ -8,7 +8,7 @@ public class InspectionTracker : MonoBehaviour
     [Header("Debug")]
     public bool showDebugInfo = true;
 
-    // Características descubiertas del objeto actual
+    // Caracterï¿½sticas descubiertas del objeto actual
     private HashSet<ItemCharacteristic> discoveredCharacteristics = new HashSet<ItemCharacteristic>();
     private MagicItemBehaviour currentInspectedItem = null;
 
@@ -22,17 +22,17 @@ public class InspectionTracker : MonoBehaviour
         Instance = this;
     }
 
-    // Llamar cuando el jugador coloca un objeto en la mesa de inspección
+    // Llamar cuando el jugador coloca un objeto en la mesa de inspecciï¿½n
     public void StartInspection(MagicItemBehaviour item)
     {
         currentInspectedItem = item;
         discoveredCharacteristics.Clear();
 
         if (showDebugInfo)
-            Debug.Log($"[InspectionTracker] Iniciando inspección de: {item.data.itemName}");
+            Debug.Log($"[InspectionTracker] Iniciando inspecciï¿½n de: {item.data.itemName}");
     }
 
-    // Llamar cuando una herramienta descubre características
+    // Llamar cuando una herramienta descubre caracterï¿½sticas
     public void RegisterDiscoveredCharacteristics(List<ItemCharacteristic> characteristics)
     {
         foreach (var c in characteristics)
@@ -41,7 +41,7 @@ public class InspectionTracker : MonoBehaviour
             {
                 discoveredCharacteristics.Add(c);
                 if (showDebugInfo)
-                    Debug.Log($"[InspectionTracker] ? Característica descubierta: {c}");
+                    Debug.Log($"[InspectionTracker] ? Caracterï¿½stica descubierta: {c}");
             }
         }
     }
@@ -51,14 +51,14 @@ public class InspectionTracker : MonoBehaviour
     {
         if (currentInspectedItem == null)
         {
-            reason = "No hay objeto en inspección";
+            reason = "No hay objeto en inspecciï¿½n";
             return false;
         }
 
-        // NIVEL NOVATO: Mínimo 3 características
+        // NIVEL NOVATO: Mï¿½nimo 3 caracterï¿½sticas
         int minRequired = 3;
 
-        // Ajustar según nivel del jugador (si tienes TrustSystem)
+        // Ajustar segï¿½n nivel del jugador (si tienes TrustSystem)
         TrustSystem trust = FindFirstObjectByType<TrustSystem>();
         if (trust != null)
         {
@@ -81,7 +81,7 @@ public class InspectionTracker : MonoBehaviour
 
         if (discoveredCharacteristics.Count < minRequired)
         {
-            reason = $"Necesitas descubrir al menos {minRequired} características. Tienes: {discoveredCharacteristics.Count}";
+            reason = $"Necesitas descubrir al menos {minRequired} caracterï¿½sticas. Tienes: {discoveredCharacteristics.Count}";
             return false;
         }
 
@@ -89,13 +89,13 @@ public class InspectionTracker : MonoBehaviour
         return true;
     }
 
-    // Determinar la clasificación correcta basándose en características descubiertas
+    // Determinar la clasificaciï¿½n correcta basï¿½ndose en caracterï¿½sticas descubiertas
     public MagicItemDataSO.ItemClassification GetSuggestedClassification()
     {
         if (currentInspectedItem == null)
             return MagicItemDataSO.ItemClassification.Vendible;
 
-        // Contar cuántas características coinciden con cada tipo
+        // Contar cuï¿½ntas caracterï¿½sticas coinciden con cada tipo
         int vendibleCount = 0;
         int contenibleCount = 0;
         int destruibleCount = 0;
@@ -107,7 +107,7 @@ public class InspectionTracker : MonoBehaviour
             if (IsDestruibleCharacteristic(discovered)) destruibleCount++;
         }
 
-        // Retornar la clasificación con más coincidencias
+        // Retornar la clasificaciï¿½n con mï¿½s coincidencias
         if (destruibleCount >= vendibleCount && destruibleCount >= contenibleCount)
             return MagicItemDataSO.ItemClassification.Destruible;
 
@@ -117,14 +117,14 @@ public class InspectionTracker : MonoBehaviour
         return MagicItemDataSO.ItemClassification.Vendible;
     }
 
-    // Validar si la clasificación elegida es correcta según lo descubierto
+    // Validar si la clasificaciï¿½n elegida es correcta segï¿½n lo descubierto
     public bool ValidateClassification(MagicItemDataSO.ItemClassification chosen, out int correctCount)
     {
         correctCount = 0;
 
         if (currentInspectedItem == null) return false;
 
-        // Contar cuántas características correctas del tipo elegido se descubrieron
+        // Contar cuï¿½ntas caracterï¿½sticas correctas del tipo elegido se descubrieron
         foreach (var discovered in discoveredCharacteristics)
         {
             bool isCorrect = false;
@@ -145,7 +145,7 @@ public class InspectionTracker : MonoBehaviour
             if (isCorrect) correctCount++;
         }
 
-        // Necesita al menos 3 características correctas del tipo elegido
+        // Necesita al menos 3 caracterï¿½sticas correctas del tipo elegido
         return correctCount >= 3;
     }
 
@@ -165,7 +165,7 @@ public class InspectionTracker : MonoBehaviour
         discoveredCharacteristics.Clear();
     }
 
-    // Clasificaciones según tu GDD
+    // Clasificaciones segï¿½n tu GDD
     private bool IsVendibleCharacteristic(ItemCharacteristic c)
     {
         return c == ItemCharacteristic.RunasBenignasVisibles ||
@@ -187,11 +187,11 @@ public class InspectionTracker : MonoBehaviour
     private bool IsDestruibleCharacteristic(ItemCharacteristic c)
     {
         return c == ItemCharacteristic.VocesEspectrales ||
-               c == ItemCharacteristic.VocesDemoníacas ||
+               c == ItemCharacteristic.VocesDemoniacas ||
                c == ItemCharacteristic.AuraRoja ||
                c == ItemCharacteristic.AuraOscura ||
                c == ItemCharacteristic.RunasMalignas ||
-               c == ItemCharacteristic.LlamasDemoníacas ||
-               c == ItemCharacteristic.MovimientoEspontáneo;
+               c == ItemCharacteristic.LlamasDemoniacas ||
+               c == ItemCharacteristic.MovimientoEspontaneo;
     }
 }

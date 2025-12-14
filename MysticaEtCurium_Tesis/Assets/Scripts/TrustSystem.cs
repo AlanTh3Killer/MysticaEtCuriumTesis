@@ -51,20 +51,23 @@ public class TrustSystem : MonoBehaviour
 
     public void RegistrarAcierto()
     {
-        FindFirstObjectByType<SimpleDialogueTrigger>()?.NotifyCorrect();
-
-        if (!firstCorrectTriggered)
-        {
-            FindFirstObjectByType<SimpleDialogueTrigger>()?.NotifyFirstCorrect();
-            firstCorrectTriggered = true;
-        }
-
         totalAciertos++;
         puntosActuales += puntosPorAcierto;
         if (puntosActuales < 0) puntosActuales = 0;
 
         ActualizarNivelDesdePuntos();
         ActualizarUI();
+
+        // ✅ FIX: Solo llamar a UNO u OTRO, no ambos
+        if (!firstCorrectTriggered)
+        {
+            FindFirstObjectByType<SimpleDialogueTrigger>()?.NotifyFirstCorrect();
+            firstCorrectTriggered = true;
+        }
+        else
+        {
+            FindFirstObjectByType<SimpleDialogueTrigger>()?.NotifyCorrect();
+        }
 
         Debug.Log("[TrustSystem] Acierto registrado");
     }

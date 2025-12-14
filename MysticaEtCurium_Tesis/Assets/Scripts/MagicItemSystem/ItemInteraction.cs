@@ -143,6 +143,7 @@ public class ItemInteraction : MonoBehaviour
             }
             else if (itemEnManoDerecha != null)
             {
+                // ✅ ESTO DEBE ESTAR - Arroja el objeto si ya tienes uno
                 ArrojarObjeto(itemEnManoDerecha, ref itemEnManoDerecha);
             }
 
@@ -345,6 +346,27 @@ public class ItemInteraction : MonoBehaviour
         if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(false);
     }
 
+    //void ArrojarObjeto(GameObject obj, ref GameObject referencia)
+    //{
+    //  obj.transform.SetParent(null);
+    //Collider col = obj.GetComponent<Collider>();
+    //if (col) col.enabled = true;
+
+    //Rigidbody rb = obj.GetComponent<Rigidbody>();
+    //if (rb)
+    //{
+    //  rb.isKinematic = false;
+    // rb.useGravity = true;
+
+    // Vector3 direccion = cameraTransform.forward + new Vector3(Random.Range(-0.05f, 0.05f), Random.Range(0f, 0.05f), 0);
+    //rb.AddForce(direccion.normalized * fuerzaArrojar, ForceMode.Impulse);
+    //rb.AddTorque(Random.insideUnitSphere * 2f, ForceMode.Impulse);
+    //}
+
+    //Debug.Log("Objeto arrojado: " + obj.name);
+    //referencia = null;
+    //}
+
     void ArrojarObjeto(GameObject obj, ref GameObject referencia)
     {
         obj.transform.SetParent(null);
@@ -357,7 +379,18 @@ public class ItemInteraction : MonoBehaviour
             rb.isKinematic = false;
             rb.useGravity = true;
 
-            Vector3 direccion = cameraTransform.forward + new Vector3(Random.Range(-0.05f, 0.05f), Random.Range(0f, 0.05f), 0);
+            // ✅ OPCIÓN 2: Reducir el ángulo vertical a la mitad
+            Vector3 direccion = cameraTransform.forward;
+            direccion.y *= 0.3f; // ← Reduce el componente Y al 30%
+            direccion.Normalize();
+
+            // Añadir ligera aleatoriedad
+            direccion += new Vector3(
+                Random.Range(-0.05f, 0.05f),
+                Random.Range(0f, 0.05f),
+                Random.Range(-0.05f, 0.05f)
+            );
+
             rb.AddForce(direccion.normalized * fuerzaArrojar, ForceMode.Impulse);
             rb.AddTorque(Random.insideUnitSphere * 2f, ForceMode.Impulse);
         }
@@ -365,7 +398,6 @@ public class ItemInteraction : MonoBehaviour
         Debug.Log("Objeto arrojado: " + obj.name);
         referencia = null;
     }
-
     void ColocarEnMesa(GameObject obj, ref GameObject referencia)
     {
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);

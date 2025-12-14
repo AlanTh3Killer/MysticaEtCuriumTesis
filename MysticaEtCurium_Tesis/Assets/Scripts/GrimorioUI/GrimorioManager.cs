@@ -9,7 +9,7 @@ public class GrimorioManager : MonoBehaviour
     [Header("Panel Principal del Grimorio")]
     public GameObject grimorioPanel;
 
-    [Header("UI de página")]
+    [Header("UI de pï¿½gina")]
     public TextMeshProUGUI itemNameText;
     public TextMeshProUGUI itemDescriptionText;
     public TextMeshProUGUI itemClassificationText;
@@ -87,7 +87,7 @@ public class GrimorioManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
     }
 
-    // MÉTODOS PÚBLICOS PARA TU SISTEMA DE BOTONES
+    // Mï¿½TODOS Pï¿½BLICOS PARA TU SISTEMA DE BOTONES
     public void GrimorioNextPage()
     {
         if (discoveredItems.Count == 0) return;
@@ -114,7 +114,7 @@ public class GrimorioManager : MonoBehaviour
     {
         if (discoveredItems.Count == 0)
         {
-            if (itemNameText != null) itemNameText.text = "Grimorio Vacío";
+            if (itemNameText != null) itemNameText.text = "Grimorio Vacï¿½o";
             if (itemDescriptionText != null) itemDescriptionText.text = "Clasifica objetos correctamente para desbloquear entradas.";
             if (itemClassificationText != null) itemClassificationText.text = "";
             if (characteristicsText != null) characteristicsText.text = "";
@@ -131,15 +131,15 @@ public class GrimorioManager : MonoBehaviour
             itemDescriptionText.text = item.description;
 
         if (itemClassificationText != null)
-            itemClassificationText.text = $"<b>Clasificación:</b> {item.classification}";
+            itemClassificationText.text = $"<b>Clasificaciï¿½n:</b> {item.classification}";
 
-        // Mostrar características
+        // Mostrar caracterï¿½sticas
         if (characteristicsText != null)
         {
-            string chars = "<b>Características identificables:</b>\n\n";
+            string chars = "<b>Caracterï¿½sticas identificables:</b>\n\n";
             foreach (var c in item.characteristics)
             {
-                chars += $"• {GetCharacteristicName(c)}\n";
+                chars += $"ï¿½ {GetCharacteristicName(c)}\n";
             }
             characteristicsText.text = chars;
         }
@@ -148,7 +148,7 @@ public class GrimorioManager : MonoBehaviour
             pageNumberText.text = $"{currentIndex + 1} / {discoveredItems.Count}";
     }
 
-    // Método público para desbloquear entrada
+    // Mï¿½todo pï¿½blico para desbloquear entrada
     public void UnlockEntry(MagicItemDataSO item)
     {
         if (item == null) return;
@@ -160,7 +160,7 @@ public class GrimorioManager : MonoBehaviour
         }
     }
 
-    // Sobrecarga para mantener compatibilidad con código existente
+    // Sobrecarga para mantener compatibilidad con cï¿½digo existente
     public void UnlockEntry(int grimorioId)
     {
         MagicItemDataSO[] allItems = Resources.LoadAll<MagicItemDataSO>("");
@@ -174,7 +174,7 @@ public class GrimorioManager : MonoBehaviour
             }
         }
 
-        Debug.LogWarning($"[Grimorio] No se encontró item con grimorioId: {grimorioId}");
+        Debug.LogWarning($"[Grimorio] No se encontrï¿½ item con grimorioId: {grimorioId}");
     }
 
     private string GetCharacteristicName(ItemCharacteristic c)
@@ -186,18 +186,18 @@ public class GrimorioManager : MonoBehaviour
             case ItemCharacteristic.SinRunas: return "Sin runas";
             case ItemCharacteristic.AuraBlanca: return "Aura blanca";
             case ItemCharacteristic.SinAura: return "Sin aura";
-            case ItemCharacteristic.SonidoRitmico: return "Sonido rítmico";
+            case ItemCharacteristic.SonidoRitmico: return "Sonido rï¿½tmico";
             case ItemCharacteristic.AuraNaranja: return "Aura naranja";
-            case ItemCharacteristic.RunasInvocacion: return "Runas de invocación";
+            case ItemCharacteristic.RunasInvocacion: return "Runas de invocaciï¿½n";
             case ItemCharacteristic.RunasDefensivas: return "Runas defensivas";
-            case ItemCharacteristic.EnergiaInestable: return "Energía inestable";
+            case ItemCharacteristic.EnergiaInestable: return "Energï¿½a inestable";
             case ItemCharacteristic.VocesEspectrales: return "Voces espectrales";
-            case ItemCharacteristic.VocesDemoníacas: return "Voces demoníacas";
+            case ItemCharacteristic.VocesDemoniacas: return "Voces demonï¿½acas";
             case ItemCharacteristic.AuraRoja: return "Aura roja";
             case ItemCharacteristic.AuraOscura: return "Aura oscura";
             case ItemCharacteristic.RunasMalignas: return "Runas malignas";
-            case ItemCharacteristic.LlamasDemoníacas: return "Llamas demoníacas";
-            case ItemCharacteristic.MovimientoEspontáneo: return "Movimiento espontáneo";
+            case ItemCharacteristic.LlamasDemoniacas: return "Llamas demonï¿½acas";
+            case ItemCharacteristic.MovimientoEspontaneo: return "Movimiento espontï¿½neo";
             default: return c.ToString();
         }
     }

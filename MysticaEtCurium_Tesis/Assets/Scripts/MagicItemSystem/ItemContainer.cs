@@ -14,8 +14,8 @@ public class ItemContainer : MonoBehaviour
     public float destroyDelay = 2f;
 
     [Header("Feedback Visual")]
-    public GameObject correctFeedbackVFX;   // Partículas verdes
-    public GameObject incorrectFeedbackVFX; // Partículas rojas
+    public GameObject correctFeedbackVFX;   // Partï¿½culas verdes
+    public GameObject incorrectFeedbackVFX; // Partï¿½culas rojas
 
     private TrustSystem trustSystem;
     private ItemSpawner spawner;
@@ -59,21 +59,20 @@ public class ItemContainer : MonoBehaviour
                 if (GrimorioManager.Instance != null)
                     GrimorioManager.Instance.UnlockEntry(item.data);
 
-                // Feedback visual positivo
-                if (correctFeedbackVFX != null)
-                    Instantiate(correctFeedbackVFX, transform.position, Quaternion.identity);
+                // âœ… USAR EL FEEDBACK MANAGER
+                if (FeedbackManager.Instance != null)
+                    FeedbackManager.Instance.ShowCorrectFeedback(transform.position);
 
-                Debug.Log("? Item clasificado correctamente: " + item.data.itemName);
+                Debug.Log("âœ“ Item clasificado correctamente: " + item.data.itemName);
             }
             else
             {
                 if (trustSystem != null) trustSystem.RegistrarError();
 
-                // Feedback visual negativo
-                if (incorrectFeedbackVFX != null)
-                    Instantiate(incorrectFeedbackVFX, transform.position, Quaternion.identity);
-
-                Debug.Log("? Item clasificado incorrectamente: " + item.data.itemName);
+                // âœ… USAR EL FEEDBACK MANAGER
+                if (FeedbackManager.Instance != null)
+                    FeedbackManager.Instance.ShowIncorrectFeedback(transform.position);
+                Debug.Log("âœ— Item clasificado incorrectamente: " + item.data.itemName);
             }
 
             StartCoroutine(DestroyAfterDelay(obj, destroyDelay));
@@ -107,8 +106,9 @@ public class ItemContainer : MonoBehaviour
             if (GrimorioManager.Instance != null)
                 GrimorioManager.Instance.UnlockEntry(data);
 
-            if (correctFeedbackVFX != null)
-                Instantiate(correctFeedbackVFX, transform.position, Quaternion.identity);
+            // âœ… USAR EL FEEDBACK MANAGER
+            if (FeedbackManager.Instance != null)
+                FeedbackManager.Instance.ShowCorrectFeedback(transform.position);
 
             Debug.Log("[ItemContainer] ? Correct: " + data.itemName);
         }
@@ -116,8 +116,9 @@ public class ItemContainer : MonoBehaviour
         {
             if (trustSystem != null) trustSystem.RegistrarError();
 
-            if (incorrectFeedbackVFX != null)
-                Instantiate(incorrectFeedbackVFX, transform.position, Quaternion.identity);
+            // âœ… USAR EL FEEDBACK MANAGER
+            if (FeedbackManager.Instance != null)
+                FeedbackManager.Instance.ShowIncorrectFeedback(transform.position);
 
             Debug.Log("[ItemContainer] ? Incorrect: " + data.itemName);
         }
@@ -125,20 +126,20 @@ public class ItemContainer : MonoBehaviour
         StartCoroutine(DestroyAfterDelay(obj, destroyDelay));
     }
 
-    //  NUEVA LÓGICA DE VALIDACIÓN
+    //  NUEVA Lï¿½GICA DE VALIDACIï¿½N
     private bool ValidateClassification(MagicItemDataSO data)
     {
-        // Si no hay tracker, validar por clasificación directa (modo legacy)
+        // Si no hay tracker, validar por clasificaciï¿½n directa (modo legacy)
         if (InspectionTracker.Instance == null)
         {
             return data.classification == acceptedClassification;
         }
 
-        // Validar basándose en características descubiertas
+        // Validar basï¿½ndose en caracterï¿½sticas descubiertas
         int correctCount;
         bool isValid = InspectionTracker.Instance.ValidateClassification(acceptedClassification, out correctCount);
 
-        Debug.Log($"[ItemContainer] Validación - Contenedor: {acceptedClassification} | Correcto: {isValid} | Características válidas: {correctCount}");
+        Debug.Log($"[ItemContainer] Validaciï¿½n - Contenedor: {acceptedClassification} | Correcto: {isValid} | Caracterï¿½sticas vï¿½lidas: {correctCount}");
 
         return isValid;
     }

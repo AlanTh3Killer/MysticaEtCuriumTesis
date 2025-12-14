@@ -53,6 +53,10 @@ public class ItemSpawner : MonoBehaviour
         // Aplicar material según clasificación
         ApplyClassificationMaterial(currentItem, data.classification);
 
+        // ✅ NUEVO: Feedback de spawn
+        if (FeedbackManager.Instance != null)
+            FeedbackManager.Instance.ShowSpawnFeedback(spawnPoint.position);
+
         Debug.Log("[ItemSpawner] Nuevo item generado: " + data.itemName);
     }
 
