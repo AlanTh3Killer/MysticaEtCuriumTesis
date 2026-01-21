@@ -28,6 +28,14 @@ public class ItemContainer : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        // NUEVO: Ignorar objetos recién arrojados
+        ThrownObjectMarker marker = other.GetComponent<ThrownObjectMarker>();
+        if (marker != null && marker.IsThrown)
+        {
+            Debug.Log("[ItemContainer] Objeto recién arrojado, ignorando...");
+            return; // No procesar hasta que termine el cooldown
+        }
+
         MagicItemBehaviour item = other.GetComponent<MagicItemBehaviour>();
         if (item != null)
         {
@@ -59,7 +67,7 @@ public class ItemContainer : MonoBehaviour
                 if (GrimorioManager.Instance != null)
                     GrimorioManager.Instance.UnlockEntry(item.data);
 
-                // ✅ USAR EL FEEDBACK MANAGER
+                //  USAR EL FEEDBACK MANAGER
                 if (FeedbackManager.Instance != null)
                     FeedbackManager.Instance.ShowCorrectFeedback(transform.position);
 
@@ -69,7 +77,7 @@ public class ItemContainer : MonoBehaviour
             {
                 if (trustSystem != null) trustSystem.RegistrarError();
 
-                // ✅ USAR EL FEEDBACK MANAGER
+                // USAR EL FEEDBACK MANAGER
                 if (FeedbackManager.Instance != null)
                     FeedbackManager.Instance.ShowIncorrectFeedback(transform.position);
                 Debug.Log("✗ Item clasificado incorrectamente: " + item.data.itemName);
@@ -106,7 +114,7 @@ public class ItemContainer : MonoBehaviour
             if (GrimorioManager.Instance != null)
                 GrimorioManager.Instance.UnlockEntry(data);
 
-            // ✅ USAR EL FEEDBACK MANAGER
+            //  USAR EL FEEDBACK MANAGER
             if (FeedbackManager.Instance != null)
                 FeedbackManager.Instance.ShowCorrectFeedback(transform.position);
 
@@ -116,7 +124,7 @@ public class ItemContainer : MonoBehaviour
         {
             if (trustSystem != null) trustSystem.RegistrarError();
 
-            // ✅ USAR EL FEEDBACK MANAGER
+            //  USAR EL FEEDBACK MANAGER
             if (FeedbackManager.Instance != null)
                 FeedbackManager.Instance.ShowIncorrectFeedback(transform.position);
 

@@ -144,14 +144,28 @@ public class DialogueSystem : MonoBehaviour
 
         dialoguePanel.SetActive(false);
 
+        //  CRÍTICO: Verificar que los scripts existen antes de reactivar
         if (playerMovement != null)
+        {
             playerMovement.enabled = true;
+            Debug.Log("[Dialogue] PlayerMovement reactivado");
+        }
 
         if (cameraController != null)
+        {
             cameraController.enabled = true;
+            Debug.Log("[Dialogue] CameraController reactivado");
+        }
 
         if (itemInteraction != null)
+        {
             itemInteraction.enabled = true;
+            Debug.Log("[Dialogue] ItemInteraction reactivado");
+        }
+
+        //  SIEMPRE desbloquear cursor al terminar diálogo
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
 
         Debug.Log("Diálogo terminado. Controles restaurados.");
     }

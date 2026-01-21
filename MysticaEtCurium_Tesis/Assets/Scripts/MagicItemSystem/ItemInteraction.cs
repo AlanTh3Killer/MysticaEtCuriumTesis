@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -134,6 +136,19 @@ public class ItemInteraction : MonoBehaviour
         // --- DETECCIÓN DE OBJETO FRENTE ---
         DetectarObjetoFrente();
 
+        // --- ARROJAR OBJETOS CON G ---
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            if (itemEnManoDerecha != null)
+            {
+                ArrojarObjeto(itemEnManoDerecha, ref itemEnManoDerecha);
+            }
+            else if (herramientaEnManoIzquierda != null)
+            {
+                ArrojarObjeto(herramientaEnManoIzquierda, ref herramientaEnManoIzquierda);
+            }
+        }
+
         // --- INTERACCIÓN GENERAL (E) - MANO DERECHA (objetos) ---
         if (Input.GetKeyDown(KeyCode.E) && !recogidaDesdeInspeccion)
         {
@@ -141,11 +156,11 @@ public class ItemInteraction : MonoBehaviour
             {
                 RecogerObjeto(objetoDetectado, manoDerecha, ref itemEnManoDerecha);
             }
-            else if (itemEnManoDerecha != null)
-            {
-                // ✅ ESTO DEBE ESTAR - Arroja el objeto si ya tienes uno
-                ArrojarObjeto(itemEnManoDerecha, ref itemEnManoDerecha);
-            }
+            //  QUITAR ESTO - Ya no arroja con E
+            // else if (itemEnManoDerecha != null)
+            // {
+            //     ArrojarObjeto(itemEnManoDerecha, ref itemEnManoDerecha);
+            // }
 
             // Interacción con NPC
             if (objetoDetectado != null && tagDetectado == "NPC")
@@ -369,35 +384,65 @@ public class ItemInteraction : MonoBehaviour
 
     void ArrojarObjeto(GameObject obj, ref GameObject referencia)
     {
+        Debug.Log($"[ArrojarObjeto] Arrojando: {obj.name}");
+
         obj.transform.SetParent(null);
+
         Collider col = obj.GetComponent<Collider>();
-        if (col) col.enabled = true;
+        if (col)
+        {
+            col.enabled = true;
+            Debug.Log($"[ArrojarObjeto] Collider activado: {col.enabled}");
+        }
 
         Rigidbody rb = obj.GetComponent<Rigidbody>();
         if (rb)
         {
             rb.isKinematic = false;
             rb.useGravity = true;
+            Debug.Log($"[ArrojarObjeto] Rigidbody configurado - isKinematic: {rb.isKinematic}, useGravity: {rb.useGravity}");
 
-            // ✅ OPCIÓN 2: Reducir el ángulo vertical a la mitad
-            Vector3 direccion = cameraTransform.forward;
-            direccion.y *= 0.3f; // ← Reduce el componente Y al 30%
-            direccion.Normalize();
+            Vector3 direccionHorizontal = cameraTransform.forward;
+            direccionHorizontal.y = 0;
+            direccionHorizontal.Normalize();
 
-            // Añadir ligera aleatoriedad
-            direccion += new Vector3(
+            direccionHorizontal += new Vector3(
                 Random.Range(-0.05f, 0.05f),
-                Random.Range(0f, 0.05f),
+                Random.Range(0f, 0.1f),
                 Random.Range(-0.05f, 0.05f)
             );
 
-            rb.AddForce(direccion.normalized * fuerzaArrojar, ForceMode.Impulse);
+            rb.AddForce(direccionHorizontal.normalized * fuerzaArrojar, ForceMode.Impulse);
             rb.AddTorque(Random.insideUnitSphere * 2f, ForceMode.Impulse);
+
+            Debug.Log($"[ArrojarObjeto] Fuerza aplicada: {direccionHorizontal.normalized * fuerzaArrojar}");
+
+            //  NUEVO: Agregar componente temporal que evita detección
+            ThrownObjectMarker marker = obj.AddComponent<ThrownObjectMarker>();
+            marker.StartCooldown(0.5f); // 0.5 segundos de inmunidad
+
+            StartCoroutine(CheckVelocityAfterThrow(rb));
+        }
+        else
+        {
+            Debug.LogError($"[ArrojarObjeto] NO HAY RIGIDBODY en {obj.name}!");
         }
 
         Debug.Log("Objeto arrojado: " + obj.name);
         referencia = null;
     }
+
+    //  AGREGAR ESTA COROUTINE
+    private IEnumerator CheckVelocityAfterThrow(Rigidbody rb)
+    {
+        yield return new WaitForSeconds(0.1f);
+
+        if (rb != null)
+        {
+            Debug.Log($"[ArrojarObjeto] Velocidad después de arrojar: {rb.linearVelocity}, isKinematic: {rb.isKinematic}");
+        }
+    }
+
     void ColocarEnMesa(GameObject obj, ref GameObject referencia)
     {
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);

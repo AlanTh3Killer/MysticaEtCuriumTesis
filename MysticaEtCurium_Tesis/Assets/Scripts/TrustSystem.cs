@@ -168,35 +168,46 @@ public class TrustSystem : MonoBehaviour
     {
         if (panelPuntuacion == null || mostrandoPanel) return;
 
-        // Buscar y desactivar scripts del jugador
+        Debug.Log("[TrustSystem] Mostrando panel final...");
+
+        ActualizarNivelDesdePuntos();
+        ActualizarUI();
+
+        //  FIX: NO desactivar scripts, solo mostrar panel
+        StartCoroutine(MostrarPanelTemporal());
+    }
+
+    private IEnumerator MostrarPanelTemporal()
+    {
+        mostrandoPanel = true;
+
+        // Buscar scripts
         PlayerMovement pm = FindFirstObjectByType<PlayerMovement>();
         PlayerCameraController pc = FindFirstObjectByType<PlayerCameraController>();
         ItemInteraction ii = FindFirstObjectByType<ItemInteraction>();
 
+        // Desactivar TEMPORALMENTE
         if (pm != null) pm.enabled = false;
         if (pc != null) pc.enabled = false;
         if (ii != null) ii.enabled = false;
 
-        Debug.Log("[TrustSystem] Jugador bloqueado. Mostrando panel de puntuaci�n...");
-
-        ActualizarNivelDesdePuntos();
-        ActualizarUI();
-        StartCoroutine(MostrarPanelTemporal(pm, pc, ii));
-    }
-
-    private IEnumerator MostrarPanelTemporal(PlayerMovement pm, PlayerCameraController pc, ItemInteraction ii)
-    {
-        mostrandoPanel = true;
         panelPuntuacion.SetActive(true);
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
 
         yield return new WaitForSecondsRealtime(tiempoVisible);
 
-        // Reactivar control del jugador
+        panelPuntuacion.SetActive(false);
+
+        //  CRÍTICO: SIEMPRE reactivar, incluso si hay diálogo
         if (pm != null) pm.enabled = true;
         if (pc != null) pc.enabled = true;
         if (ii != null) ii.enabled = true;
 
-        panelPuntuacion.SetActive(false);
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
         mostrandoPanel = false;
 
         Debug.Log("[TrustSystem] Panel ocultado. Jugador desbloqueado.");

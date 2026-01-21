@@ -31,6 +31,10 @@ public class PauseManager : MonoBehaviour
 
     void Update()
     {
+        //  NO pausar si hay diálogo activo
+        if (DialogueSystem.DialogoActivo && !JuegoPausado)
+            return;
+
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             if (JuegoPausado)
