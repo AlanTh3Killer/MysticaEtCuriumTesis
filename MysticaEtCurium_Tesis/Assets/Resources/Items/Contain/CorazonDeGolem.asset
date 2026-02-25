@@ -23,3 +23,5 @@ MonoBehaviour:
   isBurning: 0
   hasVines: 0
   grimorioId: 24
+  customMesh: {fileID: 8461569790167874334, guid: 08e68d0ab8a89d24cb4b3d8b553ca139, type: 3}
+  modelScale: {x: 1, y: 1, z: 1}

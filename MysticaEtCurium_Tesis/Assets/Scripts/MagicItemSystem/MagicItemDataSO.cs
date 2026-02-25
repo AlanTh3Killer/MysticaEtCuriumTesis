@@ -28,4 +28,12 @@ public class MagicItemDataSO : ScriptableObject
 
     [Header("Grimorio ID")]
     public int grimorioId = -1;
+
+    //Modelo 3D del objeto
+    [Header("Visual")]
+    [Tooltip("Mesh que reemplazará el placeholder. Si está vacío, usa el placeholder por defecto.")]
+    public Mesh customMesh;
+
+    [Tooltip("Escala del modelo (default 1,1,1)")]
+    public Vector3 modelScale = Vector3.one;
 }

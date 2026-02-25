@@ -75,28 +75,48 @@ public class ItemSpawner : MonoBehaviour
 
     private void ApplyClassificationMaterial(GameObject go, MagicItemDataSO.ItemClassification classification)
     {
-        // Buscar el MeshRenderer exacto: Visuales/Mesh/Prueba
-        MeshRenderer mesh = go.transform.Find("Visuales/Mesh/Prueba").GetComponent<MeshRenderer>();
+        // Buscar el MeshRenderer: Visuales/Mesh/Prueba
+        Transform meshTransform = go.transform.Find("Visuales/Mesh/Prueba");
 
-        if (mesh == null)
+        if (meshTransform == null)
         {
-            Debug.LogWarning("[ItemSpawner] No se encontró el MeshRenderer en Visuales/Mesh/Prueba");
+            Debug.LogWarning("[ItemSpawner] No se encontró Visuales/Mesh/Prueba");
             return;
         }
 
+        MeshRenderer meshRenderer = meshTransform.GetComponent<MeshRenderer>();
+        MeshFilter meshFilter = meshTransform.GetComponent<MeshFilter>();
+
+        if (meshRenderer == null || meshFilter == null)
+        {
+            Debug.LogWarning("[ItemSpawner] Falta MeshRenderer o MeshFilter");
+            return;
+        }
+
+        //Aplicar mesh custom si existe
+        MagicItemBehaviour behaviour = go.GetComponent<MagicItemBehaviour>();
+        if (behaviour != null && behaviour.data != null && behaviour.data.customMesh != null)
+        {
+            meshFilter.mesh = behaviour.data.customMesh;
+            meshTransform.localScale = behaviour.data.modelScale;
+            Debug.Log($"[ItemSpawner] Mesh custom aplicado: {behaviour.data.customMesh.name}");
+        }
+
+        // Aplicar material según clasificación
         switch (classification)
         {
             case MagicItemDataSO.ItemClassification.Contenible:
-                mesh.material = matContenible;
+                meshRenderer.material = matContenible;
                 break;
 
             case MagicItemDataSO.ItemClassification.Destruible:
-                mesh.material = matDestruible;
+                meshRenderer.material = matDestruible;
                 break;
 
             case MagicItemDataSO.ItemClassification.Vendible:
-                mesh.material = matVendible;
+                meshRenderer.material = matVendible;
                 break;
         }
+
     }
 }
