@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b835df412a41880429d514ef27c32a52, type: 3}
+  m_Name: RelojDeArenaAtemporal
+  m_EditorClassIdentifier: 
+  itemName: Reloj de arena atemporal
+  description: Este reloj es inofensivo a pesar de su funcion que es saber la hora
+    exacta de el lugar, linea temporal y o plano de existencia en el que se use.
+  classification: 0
+  characteristics: 020000000400000001000000
+  isFrozen: 0
+  isBurning: 0
+  hasVines: 0
+  grimorioId: 14

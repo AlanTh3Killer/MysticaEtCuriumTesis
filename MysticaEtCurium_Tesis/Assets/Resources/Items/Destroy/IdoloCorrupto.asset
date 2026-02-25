@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b835df412a41880429d514ef27c32a52, type: 3}
+  m_Name: IdoloCorrupto
+  m_EditorClassIdentifier: 
+  itemName: Idolo corrupto
+  description: "Ah, esto es muy tipico. La gente confunde este idolo con el idolo
+    del dios de la prosperidad. En realidad este es el idolo del dios de la avaricia,
+    quita mas de lo que le da a sus seguidores y siempre enga\xF1a a la gente con
+    promesas falsas. \nAlgunos lo confunden y otro lo buscan con la idea erronea
+    de que les va a proveer mas rapido que el dios de prosperidad real...terrible."
+  classification: 2
+  characteristics: 0c000000100000000b000000
+  isFrozen: 0
+  isBurning: 0
+  hasVines: 0
+  grimorioId: 19
