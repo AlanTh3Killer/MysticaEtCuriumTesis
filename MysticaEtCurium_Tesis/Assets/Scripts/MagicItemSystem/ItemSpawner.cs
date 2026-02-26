@@ -5,8 +5,8 @@ using UnityEngine;
 public class ItemSpawner : MonoBehaviour
 {
     [Header("Spawner Settings")]
-    public GameObject itemPrefab;                // Tu prefab ItemPrueba
-    public Transform spawnPoint;                 // Punto donde aparecen los objetos
+    public GameObject itemPrefab;                // Prefab placeholder genérico
+    public Transform spawnPoint;
 
     [Header("Visual Materials")]
     public Material matContenible;               // ItemContenible (Morado)
@@ -31,10 +31,8 @@ public class ItemSpawner : MonoBehaviour
             return;
         }
 
-        // Si ya hay uno, no spawnear doble
         if (currentItem != null) return;
 
-        // Elegir un ScriptableObject al azar
         if (posiblesItems == null || posiblesItems.Count == 0)
         {
             Debug.LogError("[ItemSpawner] No hay ScriptableObjects asignados.");
@@ -43,17 +41,17 @@ public class ItemSpawner : MonoBehaviour
 
         MagicItemDataSO data = posiblesItems[Random.Range(0, posiblesItems.Count)];
 
-        // Crear instancia
+        // Crear instancia del ItemPrueba (estructura completa)
         currentItem = Instantiate(itemPrefab, spawnPoint.position, spawnPoint.rotation);
 
-        // Asignar data al MagicItemBehaviour
+        // Asignar data
         MagicItemBehaviour behaviour = currentItem.GetComponent<MagicItemBehaviour>();
         behaviour.data = data;
 
-        // Aplicar material según clasificación
-        ApplyClassificationMaterial(currentItem, data.classification);
+        //Reemplazar visual si existe customPrefab
+        ReplaceVisual(currentItem, data);
 
-        // ✅ NUEVO: Feedback de spawn
+        // Feedback de spawn
         if (FeedbackManager.Instance != null)
             FeedbackManager.Instance.ShowSpawnFeedback(spawnPoint.position);
 
@@ -73,50 +71,84 @@ public class ItemSpawner : MonoBehaviour
         SpawnNewItem();
     }
 
-    private void ApplyClassificationMaterial(GameObject go, MagicItemDataSO.ItemClassification classification)
+    // Reemplazar solo el contenido visual
+    private void ReplaceVisual(GameObject item, MagicItemDataSO data)
     {
-        // Buscar el MeshRenderer: Visuales/Mesh/Prueba
-        Transform meshTransform = go.transform.Find("Visuales/Mesh/Prueba");
+        // Buscar la ruta Visuales/Mesh
+        Transform visualesTransform = item.transform.Find("Visuales");
+        if (visualesTransform == null)
+        {
+            Debug.LogError("[ItemSpawner] No se encontró Visuales en ItemPrueba");
+            return;
+        }
 
+        Transform meshTransform = visualesTransform.Find("Mesh");
         if (meshTransform == null)
         {
-            Debug.LogWarning("[ItemSpawner] No se encontró Visuales/Mesh/Prueba");
+            Debug.LogError("[ItemSpawner] No se encontró Visuales/Mesh en ItemPrueba");
             return;
         }
 
-        MeshRenderer meshRenderer = meshTransform.GetComponent<MeshRenderer>();
-        MeshFilter meshFilter = meshTransform.GetComponent<MeshFilter>();
-
-        if (meshRenderer == null || meshFilter == null)
+        // Si hay visualPrefab custom, reemplazar todo el contenido de Mesh
+        if (data.visualPrefab != null)
         {
-            Debug.LogWarning("[ItemSpawner] Falta MeshRenderer o MeshFilter");
+            // Destruir el placeholder (Prueba)
+            foreach (Transform child in meshTransform)
+            {
+                Destroy(child.gameObject);
+            }
+
+            // Instanciar el prefab custom como hijo de Mesh
+            GameObject visualInstance = Instantiate(data.visualPrefab, meshTransform);
+            visualInstance.transform.localPosition = Vector3.zero;
+            visualInstance.transform.localRotation = Quaternion.identity;
+            visualInstance.transform.localScale = Vector3.one;
+
+            Debug.Log($"[ItemSpawner] Visual custom aplicado: {data.visualPrefab.name}");
+        }
+        else
+        {
+            // Si NO hay customPrefab, usar placeholder y colorearlo
+            ApplyClassificationMaterial(meshTransform.gameObject, data.classification);
+            Debug.Log($"[ItemSpawner] Placeholder coloreado: {data.classification}");
+        }
+    }
+
+    //Colorear el placeholder (hijo de Mesh)
+    private void ApplyClassificationMaterial(GameObject meshContainer, MagicItemDataSO.ItemClassification classification)
+    {
+        // Buscar TODOS los MeshRenderers dentro de Visuales/Mesh
+        MeshRenderer[] renderers = meshContainer.GetComponentsInChildren<MeshRenderer>();
+
+        if (renderers.Length == 0)
+        {
+            Debug.LogWarning("[ItemSpawner] No se encontraron MeshRenderers en Visuales/Mesh");
             return;
         }
 
-        //Aplicar mesh custom si existe
-        MagicItemBehaviour behaviour = go.GetComponent<MagicItemBehaviour>();
-        if (behaviour != null && behaviour.data != null && behaviour.data.customMesh != null)
-        {
-            meshFilter.mesh = behaviour.data.customMesh;
-            meshTransform.localScale = behaviour.data.modelScale;
-            Debug.Log($"[ItemSpawner] Mesh custom aplicado: {behaviour.data.customMesh.name}");
-        }
+        Material materialToApply = null;
 
-        // Aplicar material según clasificación
         switch (classification)
         {
             case MagicItemDataSO.ItemClassification.Contenible:
-                meshRenderer.material = matContenible;
+                materialToApply = matContenible;
                 break;
 
             case MagicItemDataSO.ItemClassification.Destruible:
-                meshRenderer.material = matDestruible;
+                materialToApply = matDestruible;
                 break;
 
             case MagicItemDataSO.ItemClassification.Vendible:
-                meshRenderer.material = matVendible;
+                materialToApply = matVendible;
                 break;
         }
 
+        // Aplicar material a todos los renderers
+        foreach (var renderer in renderers)
+        {
+            renderer.material = materialToApply;
+        }
+
+        Debug.Log($"[ItemSpawner] Material aplicado a {renderers.Length} renderers");
     }
 }

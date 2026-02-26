@@ -22,5 +22,4 @@ MonoBehaviour:
   isBurning: 0
   hasVines: 0
   grimorioId: 16
-  customMesh: {fileID: 4561150260733643976, guid: 9959ba40e5ba2a04a82ed1535b84eec6, type: 3}
-  modelScale: {x: 1, y: 1, z: 1}
+  visualPrefab: {fileID: 4392027987626541320, guid: 2b4c5dff1e2868a4d9064c9265eb5c3c, type: 3}

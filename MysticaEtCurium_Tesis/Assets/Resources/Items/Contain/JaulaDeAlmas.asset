@@ -22,3 +22,4 @@ MonoBehaviour:
   isBurning: 0
   hasVines: 0
   grimorioId: 23
+  visualPrefab: {fileID: 909385489089009904, guid: 52a4ec4eaeaa3004e88c77640c1fc460, type: 3}
