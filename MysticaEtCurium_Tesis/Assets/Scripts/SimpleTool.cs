@@ -44,6 +44,10 @@ public class SimpleTool : MonoBehaviour
             InspectionTracker.Instance.RegisterDiscoveredCharacteristics(detected);
         }
 
+        VisualCharacteristicsApplier applier = item.GetComponent<VisualCharacteristicsApplier>();
+        if (applier != null)
+            applier.RevealCharacteristics(detected);
+
         if (detected.Count > 0)
         {
             string message = $"<b>{toolName} detectó:</b>\n\n";
@@ -53,7 +57,7 @@ public class SimpleTool : MonoBehaviour
             }
             ShowMessage(message);
 
-            // ✅ FIX: Solo mostrar feedback en el OBJETO, no en la herramienta
+            // FIX: Solo mostrar feedback en el OBJETO, no en la herramienta
             if (FeedbackManager.Instance != null)
             {
                 FeedbackManager.Instance.ShowDiscoveryFeedback(item.transform.position);

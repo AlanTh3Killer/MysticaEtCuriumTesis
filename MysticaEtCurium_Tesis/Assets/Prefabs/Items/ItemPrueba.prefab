@@ -108,6 +108,7 @@ GameObject:
   - component: {fileID: 4977311354585607680}
   - component: {fileID: 4553260237646369035}
   - component: {fileID: 3244798303645764263}
+  - component: {fileID: 1775968361600202376}
   m_Layer: 7
   m_Name: ItemPrueba
   m_TagString: Item
@@ -192,6 +193,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   data: {fileID: 0}
+--- !u!114 &1775968361600202376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5097878450228439444}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b339f4b9f850b84eaf75b8b717ff67b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  auraBlancaPrefab: {fileID: 5192420985756274198, guid: f3d9bd6ddfd846345aaaf6e3fcd06090, type: 3}
+  auraNaranjaPrefab: {fileID: 7462744963719392163, guid: b811ff49aec988e409eb6704de73db9b, type: 3}
+  auraRojaPrefab: {fileID: 5414849554018212811, guid: 1ad64cfa647d5bd42aeefeadeeab189a, type: 3}
+  auraOscuraPrefab: {fileID: 1860376983298668002, guid: 33b0ee89fb55e8542a49b1794f6e0a27, type: 3}
+  runaBenignaPrefab: {fileID: 930101504157001336, guid: 3394631b9c8866f4da91f93732d30cef, type: 3}
+  runaMalignaPrefab: {fileID: 158668680161011438, guid: 9ddfb6fe8a6dfc145af8397c5bc4a876, type: 3}
+  runaInvocacionPrefab: {fileID: 2969891590057502835, guid: 5493954c4f32e774ab95e3a64aadc52d, type: 3}
+  runaDefensivaPrefab: {fileID: 1078512965847940139, guid: 9200df99b8852b345877b3d9050f6b11, type: 3}
+  sonidoArcanoVisualPrefab: {fileID: 0}
+  sonidoRitmicoVisualPrefab: {fileID: 0}
+  vocesEspectralesVisualPrefab: {fileID: 0}
+  vocesDemoniacasVisualPrefab: {fileID: 0}
 --- !u!1 &6889037939240450903
 GameObject:
   m_ObjectHideFlags: 0

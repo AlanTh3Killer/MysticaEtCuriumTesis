@@ -50,12 +50,49 @@ public class ItemSpawner : MonoBehaviour
 
         //Reemplazar visual si existe customPrefab
         ReplaceVisual(currentItem, data);
+        // Aplicar efectos visuales de características
+        VisualCharacteristicsApplier applier = currentItem.GetComponent<VisualCharacteristicsApplier>();
+        if (applier == null)
+        {
+            applier = currentItem.AddComponent<VisualCharacteristicsApplier>();
 
+            // Asignar prefabs de efectos (esto solo la primera vez)
+            // OPCIÓN A: Asignar manualmente en el Inspector del ItemPrueba prefab
+            // OPCIÓN B: Cargar desde Resources (ver abajo)
+            
+        }
+
+        applier.ApplyCharacteristics(data, currentItem);
         // Feedback de spawn
         if (FeedbackManager.Instance != null)
             FeedbackManager.Instance.ShowSpawnFeedback(spawnPoint.position);
 
         Debug.Log("[ItemSpawner] Nuevo item generado: " + data.itemName);
+    }
+
+    private GameObject GetEffectPrefab(ItemCharacteristic characteristic)
+    {
+        string prefabName = GetPrefabName(characteristic);
+        if (string.IsNullOrEmpty(prefabName)) return null;
+
+        return Resources.Load<GameObject>($"VFX/{prefabName}");
+    }
+
+    private string GetPrefabName(ItemCharacteristic c)
+    {
+        switch (c)
+        {
+            case ItemCharacteristic.AuraBlanca: return "AuraBlanca";
+            case ItemCharacteristic.AuraNaranja: return "AuraNaranja";
+            case ItemCharacteristic.AuraRoja: return "AuraRoja";
+            case ItemCharacteristic.AuraOscura: return "AuraOscura";
+            case ItemCharacteristic.RunasBenignasVisibles: return "RunaBenigna_VFX";
+            case ItemCharacteristic.RunasDefensivas: return "RunaDefensivas_VFX";
+            case ItemCharacteristic.RunasInvocacion: return "RunaInvocacion_VFX";
+            case ItemCharacteristic.RunasMalignas: return "RunaMalignas_VFX";
+            
+            default: return null;
+        }
     }
 
     // El contenedor llamará esto cuando destruya un objeto
@@ -113,6 +150,8 @@ public class ItemSpawner : MonoBehaviour
             Debug.Log($"[ItemSpawner] Placeholder coloreado: {data.classification}");
         }
     }
+
+
 
     //Colorear el placeholder (hijo de Mesh)
     private void ApplyClassificationMaterial(GameObject meshContainer, MagicItemDataSO.ItemClassification classification)
