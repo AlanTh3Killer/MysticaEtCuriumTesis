@@ -26,13 +26,16 @@ public class InspectionTracker : MonoBehaviour
     public void StartInspection(MagicItemBehaviour item)
     {
         currentInspectedItem = item;
-        discoveredCharacteristics.Clear();
+
+        // Restaurar progreso previo del objeto en lugar de limpiar
+        discoveredCharacteristics = new HashSet<ItemCharacteristic>(item.inspectedCharacteristics);
 
         if (showDebugInfo)
-            Debug.Log($"[InspectionTracker] Iniciando inspecci�n de: {item.data.itemName}");
+            Debug.Log($"[InspectionTracker] Reanudando inspección de: {item.data.itemName} " +
+                      $"(ya descubiertas: {discoveredCharacteristics.Count})");
     }
 
-    // Llamar cuando una herramienta descubre caracter�sticas
+    // Llamar cuando una herramienta descubre características
     public void RegisterDiscoveredCharacteristics(List<ItemCharacteristic> characteristics)
     {
         foreach (var c in characteristics)
@@ -40,8 +43,13 @@ public class InspectionTracker : MonoBehaviour
             if (!discoveredCharacteristics.Contains(c))
             {
                 discoveredCharacteristics.Add(c);
+
+                // Guardar también en el objeto para que persista
+                if (currentInspectedItem != null)
+                    currentInspectedItem.inspectedCharacteristics.Add(c);
+
                 if (showDebugInfo)
-                    Debug.Log($"[InspectionTracker] ? Caracter�stica descubierta: {c}");
+                    Debug.Log($"[InspectionTracker] Característica descubierta: {c}");
             }
         }
     }

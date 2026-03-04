@@ -1,10 +1,15 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class MagicItemBehaviour : MonoBehaviour
 {
     [Header("Datos del objeto mágico")]
     public MagicItemDataSO data;
 
+    // Progreso de inspección guardado en el objeto
+    [HideInInspector]
+    public HashSet<ItemCharacteristic> inspectedCharacteristics = new HashSet<ItemCharacteristic>();
+    
     private void Start()
     {
         if (data != null)

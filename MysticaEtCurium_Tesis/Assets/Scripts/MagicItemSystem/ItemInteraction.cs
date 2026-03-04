@@ -535,6 +535,16 @@ public class ItemInteraction : MonoBehaviour
     #region ModoInspeccion
     void EntrarModoInspeccion()
     {
+        // Verificar que el jugador esté cerca de la mesa
+        if (posicionInspeccion == null) return;
+
+        float distancia = Vector3.Distance(transform.position, posicionInspeccion.position);
+        if (distancia > distanciaMaximaMesa)
+        {
+            Debug.Log("[ItemInteraction] Demasiado lejos de la mesa para inspeccionar.");
+            return;
+        }
+
         enModoInspeccion = true;
         transform.position = posicionInspeccion.position;
         transform.rotation = posicionInspeccion.rotation;
