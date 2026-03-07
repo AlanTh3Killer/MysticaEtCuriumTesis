@@ -72,16 +72,40 @@ public class ItemInteraction : MonoBehaviour
             return;
 
         // MODO INSPECCION
+        //if (Input.GetKeyDown(inputInspeccion))
+        //{
+        //    if (!enModoInspeccion)
+        //    {
+        //        // Verificar proximidad ANTES de triggear el diálogo
+        //        if (!JugadorCercaDeMesa()) return; // ← salir si está lejos
+
+        //        if (primeraVezInspeccion)
+        //        {
+        //            FindFirstObjectByType<SimpleDialogueTrigger>()?.NotifyInspect();
+        //            primeraVezInspeccion = false;
+        //        }
+        //        EntrarModoInspeccion();
+        //    }
+        //    else
+        //    {
+        //        SalirModoInspeccion();
+        //    }
+        //}
+
+        // MODO INSPECCION Alternativo
         if (Input.GetKeyDown(inputInspeccion))
         {
             if (!enModoInspeccion)
             {
-                if (primeraVezInspeccion)
+                if (JugadorCercaDeMesa()) // ← solo si está cerca
                 {
-                    FindFirstObjectByType<SimpleDialogueTrigger>()?.NotifyInspect();
-                    primeraVezInspeccion = false;
+                    if (primeraVezInspeccion)
+                    {
+                        FindFirstObjectByType<SimpleDialogueTrigger>()?.NotifyInspect();
+                        primeraVezInspeccion = false;
+                    }
+                    EntrarModoInspeccion();
                 }
-                EntrarModoInspeccion();
             }
             else
             {
@@ -322,7 +346,14 @@ public class ItemInteraction : MonoBehaviour
                 objetoDetectado = hit.collider.gameObject;
                 tagDetectado = "PuntoInspeccion";
 
-                if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(itemEnManoDerecha != null);
+                // Mostrar F solo si está cerca de la mesa
+                bool cercaDeMesa = JugadorCercaDeMesa();
+                bool tieneItemEnMano = itemEnManoDerecha != null;
+                bool hayObjetoEnMesa = objetoEnInspeccion;
+
+                bool mostrarF = cercaDeMesa && (tieneItemEnMano || hayObjetoEnMesa || enModoInspeccion);
+
+                if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(mostrarF);
                 if (itemFeedbackUI != null) itemFeedbackUI.SetActive(false);
                 if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(false);
                 return;
@@ -533,6 +564,12 @@ public class ItemInteraction : MonoBehaviour
     #endregion
 
     #region ModoInspeccion
+    private bool JugadorCercaDeMesa()
+    {
+        if (posicionInspeccion == null) return false;
+        return Vector3.Distance(transform.position, posicionInspeccion.position) <= distanciaMaximaMesa;
+    }
+
     void EntrarModoInspeccion()
     {
         // Verificar que el jugador esté cerca de la mesa
