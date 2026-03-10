@@ -26,6 +26,8 @@ public class ItemInteraction : MonoBehaviour
     [SerializeField] private GameObject itemFeedbackUI;
     [SerializeField] private GameObject herramientaFeedbackUI;
     [SerializeField] private GameObject iniciarInspeccionFeedbackUI;
+    [SerializeField] private GameObject usarHerramientaFeedbackUI;   // ← NUEVO: click derecho
+    [SerializeField] private GameObject salirInspeccionFeedbackUI;   // ← NUEVO: F esquina superior
 
     private GameObject objetoDetectado = null;
     private string tagDetectado = "";
@@ -36,7 +38,8 @@ public class ItemInteraction : MonoBehaviour
     [Header("Modo Inspeccion")]
     [SerializeField] private Transform posicionInspeccion;
     [SerializeField] private KeyCode inputInspeccion = KeyCode.F;
-    [SerializeField] private float distanciaMaximaMesa = 3f;
+    [SerializeField] private float distanciaMaximaMesa = 3f;        // ← para teleport
+    [SerializeField] private float distanciaFeedbackMesa = 2f;      // ← NUEVO: para feedback visual
 
     [SerializeField] private Transform puntoDeInspeccion;
     [SerializeField] private float velocidadRotacion = 100f;
@@ -281,6 +284,9 @@ public class ItemInteraction : MonoBehaviour
         {
             inspectionStatusText.text = "";
         }
+
+        // Al final del Update(), antes del cierre:
+        ActualizarFeedbacksModoInspeccion();
     }
 
     #region Interaccion
@@ -293,6 +299,9 @@ public class ItemInteraction : MonoBehaviour
     //  FIX PRINCIPAL: Detección separada para feedback UI
     void DetectarObjetoFrente()
     {
+        // Si estamos en modo inspección, los feedbacks los maneja ActualizarFeedbacksModoInspeccion
+        if (enModoInspeccion) return;
+
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
         RaycastHit hit;
 
@@ -347,11 +356,10 @@ public class ItemInteraction : MonoBehaviour
                 tagDetectado = "PuntoInspeccion";
 
                 // Mostrar F solo si está cerca de la mesa
-                bool cercaDeMesa = JugadorCercaDeMesa();
                 bool tieneItemEnMano = itemEnManoDerecha != null;
                 bool hayObjetoEnMesa = objetoEnInspeccion;
 
-                bool mostrarF = cercaDeMesa && (tieneItemEnMano || hayObjetoEnMesa || enModoInspeccion);
+                bool mostrarF = JugadorEnRangoDeFeedback() && (tieneItemEnMano || hayObjetoEnMesa || enModoInspeccion);
 
                 if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(mostrarF);
                 if (itemFeedbackUI != null) itemFeedbackUI.SetActive(false);
@@ -367,6 +375,43 @@ public class ItemInteraction : MonoBehaviour
         if (itemFeedbackUI != null) itemFeedbackUI.SetActive(false);
         if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(false);
         if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(false);
+    }
+
+    void ActualizarFeedbacksModoInspeccion()
+    {
+        if (enModoInspeccion)
+        {
+            // Mostrar F-salir perpetuamente en esquina superior
+            if (salirInspeccionFeedbackUI != null) salirInspeccionFeedbackUI.SetActive(true);
+
+            // Ocultar el feedback de entrar a inspección
+            if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(false);
+
+            // Si hay objeto en mesa
+            if (objetoEnInspeccion)
+            {
+                bool tieneHerramienta = herramientaEnManoIzquierda != null;
+
+                // Click derecho = usar herramienta
+                if (usarHerramientaFeedbackUI != null)
+                    usarHerramientaFeedbackUI.SetActive(tieneHerramienta);
+
+                // E = tomar objeto (solo si no tiene herramienta)
+                if (itemFeedbackUI != null)
+                    itemFeedbackUI.SetActive(!tieneHerramienta);
+            }
+            else
+            {
+                if (usarHerramientaFeedbackUI != null) usarHerramientaFeedbackUI.SetActive(false);
+                if (itemFeedbackUI != null) itemFeedbackUI.SetActive(false);
+            }
+        }
+        else
+        {
+            // Fuera de modo inspección: apagar feedback de salir
+            if (salirInspeccionFeedbackUI != null) salirInspeccionFeedbackUI.SetActive(false);
+            if (usarHerramientaFeedbackUI != null) usarHerramientaFeedbackUI.SetActive(false);
+        }
     }
 
     void RecogerObjeto(GameObject obj, Transform mano, ref GameObject referencia)
@@ -479,6 +524,13 @@ public class ItemInteraction : MonoBehaviour
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
         if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, mesaLayer))
         {
+            // Herramientas NO pueden ir al PuntoInspeccion
+            if (hit.collider.CompareTag("PuntoInspeccion") && obj.CompareTag("Herramienta"))
+            {
+                Debug.Log("[ItemInteraction] Las herramientas no van al punto de inspección.");
+                return;
+            }
+
             Vector3 posicion = hit.point;
             Quaternion rotacion = Quaternion.LookRotation(hit.normal) * Quaternion.Euler(90, 0, 0);
 
@@ -568,6 +620,12 @@ public class ItemInteraction : MonoBehaviour
     {
         if (posicionInspeccion == null) return false;
         return Vector3.Distance(transform.position, posicionInspeccion.position) <= distanciaMaximaMesa;
+    }
+
+    private bool JugadorEnRangoDeFeedback()
+    {
+        if (posicionInspeccion == null) return false;
+        return Vector3.Distance(transform.position, posicionInspeccion.position) <= distanciaFeedbackMesa;
     }
 
     void EntrarModoInspeccion()
