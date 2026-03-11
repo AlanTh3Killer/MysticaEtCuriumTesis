@@ -15,6 +15,7 @@ TagManager:
   - PuntoEspecial
   - NPC
   - Container
+  - MesaDeTrabajo
   layers:
   - Default
   - TransparentFX
@@ -27,7 +28,7 @@ TagManager:
   - Mesa
   - NPC
   - AuraView
-  - 
+  - MesaDeTrabajo
   - 
   - 
   - 

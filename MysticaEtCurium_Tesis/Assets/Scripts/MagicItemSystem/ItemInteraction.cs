@@ -28,6 +28,9 @@ public class ItemInteraction : MonoBehaviour
     [SerializeField] private GameObject iniciarInspeccionFeedbackUI;
     [SerializeField] private GameObject usarHerramientaFeedbackUI;   // ← NUEVO: click derecho
     [SerializeField] private GameObject salirInspeccionFeedbackUI;   // ← NUEVO: F esquina superior
+    [SerializeField] private GameObject tomarObjetoInspeccionFeedbackUI;
+    [SerializeField] private GameObject colocarEnMesaFeedbackUI;
+    [SerializeField] private GameObject mesaTrabajoFeedbackUI; // ← feedback click derecho para mesa de trabajo
 
     private GameObject objetoDetectado = null;
     private string tagDetectado = "";
@@ -53,6 +56,11 @@ public class ItemInteraction : MonoBehaviour
     [Header("Física de lanzamiento")]
     [SerializeField] private float fuerzaArrojar = 10f;
     [SerializeField] private float umbralMovimiento = 0.2f;
+
+    [Header("Mesa de Trabajo")]
+    [SerializeField] private Transform mesaDeTrabajo;           // Transform del objeto mesa de trabajo
+    [SerializeField] private LayerMask mesaTrabajoLayer;        // Layer exclusiva de la mesa de trabajo
+    [SerializeField] private float distanciaMesaTrabajo = 3f;
 
     public bool enModoInspeccion { get; private set; } = false;
 
@@ -152,7 +160,7 @@ public class ItemInteraction : MonoBehaviour
         }
 
         // --- Retomar objeto desde inspección ---
-        if (Input.GetKeyDown(KeyCode.E) && objetoEnInspeccion)
+        if (Input.GetKeyDown(KeyCode.E) && objetoEnInspeccion && enModoInspeccion) 
         {
             RecogerObjeto(objetoEnMesa, manoDerecha, ref itemEnManoDerecha);
             objetoEnMesa = null;
@@ -249,9 +257,9 @@ public class ItemInteraction : MonoBehaviour
             ColocarEnMesa(itemEnManoDerecha, ref itemEnManoDerecha);
         }
 
-        if (Input.GetMouseButtonDown(1) && herramientaEnManoIzquierda != null)
+        if (Input.GetMouseButtonDown(1) && herramientaEnManoIzquierda != null && !enModoInspeccion)
         {
-            ColocarEnMesa(herramientaEnManoIzquierda, ref herramientaEnManoIzquierda);
+            ColocarEnMesaTrabajo(herramientaEnManoIzquierda, ref herramientaEnManoIzquierda);
         }
 
         // --- Rotar objeto en modo inspección ---
@@ -368,6 +376,16 @@ public class ItemInteraction : MonoBehaviour
             }
         }
 
+        // TERCERA PASADA: Detectar mesa de trabajo
+        if (Physics.Raycast(ray, out hit, distanciaMesaTrabajo, mesaTrabajoLayer))
+        {
+            bool tieneHerramienta = herramientaEnManoIzquierda != null;
+            Debug.Log($"[MesaTrabajo] Detectada. tieneHerramienta: {tieneHerramienta}, feedbackUI activo: {mesaTrabajoFeedbackUI.activeSelf}");
+            mesaTrabajoFeedbackUI.SetActive(tieneHerramienta);
+            Debug.Log($"[MesaTrabajo] Después de SetActive: {mesaTrabajoFeedbackUI.activeSelf}");
+            return;
+        }
+
         // Si no detecta nada válido
         objetoDetectado = null;
         tagDetectado = "";
@@ -375,6 +393,7 @@ public class ItemInteraction : MonoBehaviour
         if (itemFeedbackUI != null) itemFeedbackUI.SetActive(false);
         if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(false);
         if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(false);
+        if (mesaTrabajoFeedbackUI != null) mesaTrabajoFeedbackUI.SetActive(false);
     }
 
     void ActualizarFeedbacksModoInspeccion()
@@ -396,21 +415,35 @@ public class ItemInteraction : MonoBehaviour
                 if (usarHerramientaFeedbackUI != null)
                     usarHerramientaFeedbackUI.SetActive(tieneHerramienta);
 
-                // E = tomar objeto (solo si no tiene herramienta)
+                // E centrado = tomar objeto (solo si no tiene herramienta)
+                if (tomarObjetoInspeccionFeedbackUI != null)
+                    tomarObjetoInspeccionFeedbackUI.SetActive(!tieneHerramienta);
+
+                // El feedback E normal siempre apagado en modo inspección
                 if (itemFeedbackUI != null)
-                    itemFeedbackUI.SetActive(!tieneHerramienta);
+                    itemFeedbackUI.SetActive(false);
+
+                // No hay objeto que colocar, apagar ese feedback
+                if (colocarEnMesaFeedbackUI != null)
+                    colocarEnMesaFeedbackUI.SetActive(false);
             }
-            else
+            else // No hay objeto en mesa todavía
             {
                 if (usarHerramientaFeedbackUI != null) usarHerramientaFeedbackUI.SetActive(false);
+                if (tomarObjetoInspeccionFeedbackUI != null) tomarObjetoInspeccionFeedbackUI.SetActive(false);
                 if (itemFeedbackUI != null) itemFeedbackUI.SetActive(false);
+
+                // Mostrar click izquierdo solo si tiene item en mano
+                if (colocarEnMesaFeedbackUI != null)
+                    colocarEnMesaFeedbackUI.SetActive(itemEnManoDerecha != null);
             }
         }
-        else
+        else // Fuera de modo inspección
         {
-            // Fuera de modo inspección: apagar feedback de salir
             if (salirInspeccionFeedbackUI != null) salirInspeccionFeedbackUI.SetActive(false);
             if (usarHerramientaFeedbackUI != null) usarHerramientaFeedbackUI.SetActive(false);
+            if (tomarObjetoInspeccionFeedbackUI != null) tomarObjetoInspeccionFeedbackUI.SetActive(false);
+            if (colocarEnMesaFeedbackUI != null) colocarEnMesaFeedbackUI.SetActive(false);
         }
     }
 
@@ -516,6 +549,30 @@ public class ItemInteraction : MonoBehaviour
         if (rb != null)
         {
             Debug.Log($"[ArrojarObjeto] Velocidad después de arrojar: {rb.linearVelocity}, isKinematic: {rb.isKinematic}");
+        }
+    }
+
+    void ColocarEnMesaTrabajo(GameObject obj, ref GameObject referencia)
+    {
+        Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
+        if (Physics.Raycast(ray, out RaycastHit hit, distanciaMesaTrabajo, mesaTrabajoLayer))
+        {
+            obj.transform.SetParent(null);
+            obj.transform.position = hit.point + Vector3.up * 0.05f;
+            obj.transform.rotation = Quaternion.identity;
+
+            Collider col = obj.GetComponent<Collider>();
+            if (col) col.enabled = true;
+
+            Rigidbody rb = obj.GetComponent<Rigidbody>();
+            if (rb) rb.isKinematic = true;
+
+            referencia = null;
+            Debug.Log("[ItemInteraction] Herramienta colocada en mesa de trabajo.");
+        }
+        else
+        {
+            Debug.Log("[ItemInteraction] No estás viendo la mesa de trabajo.");
         }
     }
 
