@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using TMPro;
 
 public class PauseManager : MonoBehaviour
 {
@@ -13,25 +15,45 @@ public class PauseManager : MonoBehaviour
     [SerializeField] private ItemInteraction itemInteraction;
     [SerializeField] private DialogueSystem dialogueSystem;
 
+    [Header("Submenús del menú de pausa")]
+    [SerializeField] private GameObject botonesPrincipales;  // ← grupo con Reanudar, Config, Salir
+    [SerializeField] private GameObject panelConfiguracion;  // ← slider + regresar
+
+    [Header("Sensibilidad")]
+    [SerializeField] private Slider sliderSensibilidad;
+    [SerializeField] private TextMeshProUGUI textoSensibilidad;
+
     private bool dialogoActivoAntesDePausa = false;
 
     private void Start()
     {
-        if (menuPausa != null)
-            menuPausa.SetActive(false);
+        if (menuPausa != null) menuPausa.SetActive(false);
 
-        // ✅ FIX: Asegurar cursor desbloqueado si estamos en menú
         if (SceneManager.GetActiveScene().name.Contains("Menu") ||
             SceneManager.GetActiveScene().name.Contains("MainMenu"))
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
+
+        // Inicializar slider
+        if (sliderSensibilidad != null && playerCameraController != null)
+        {
+            float valorGuardado = PlayerPrefs.GetFloat("Sensibilidad", 0.5f);
+            sliderSensibilidad.value = valorGuardado;
+            playerCameraController.SetSensibilidad(valorGuardado);
+            ActualizarTextoSensibilidad(valorGuardado);
+
+            sliderSensibilidad.onValueChanged.AddListener((val) =>
+            {
+                playerCameraController.SetSensibilidad(val);
+                ActualizarTextoSensibilidad(val);
+            });
+        }
     }
 
     void Update()
     {
-        //  NO pausar si hay diálogo activo
         if (DialogueSystem.DialogoActivo && !JuegoPausado)
             return;
 
@@ -49,8 +71,11 @@ public class PauseManager : MonoBehaviour
         JuegoPausado = true;
         Time.timeScale = 0f;
 
-        if (menuPausa != null)
-            menuPausa.SetActive(true);
+        if (menuPausa != null) menuPausa.SetActive(true);
+
+        // Siempre mostrar botones principales al pausar
+        if (botonesPrincipales != null) botonesPrincipales.SetActive(true);
+        if (panelConfiguracion != null) panelConfiguracion.SetActive(false);
 
         if (dialogueSystem != null)
         {
@@ -64,7 +89,6 @@ public class PauseManager : MonoBehaviour
         if (itemInteraction != null) itemInteraction.enabled = false;
         if (dayNightCycle != null) dayNightCycle.enabled = false;
 
-        // ✅ FIX: Desbloquear cursor INMEDIATAMENTE
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
@@ -74,8 +98,7 @@ public class PauseManager : MonoBehaviour
         JuegoPausado = false;
         Time.timeScale = 1f;
 
-        if (menuPausa != null)
-            menuPausa.SetActive(false);
+        if (menuPausa != null) menuPausa.SetActive(false);
 
         if (playerMovement != null) playerMovement.enabled = true;
         if (playerCameraController != null) playerCameraController.enabled = true;
@@ -92,16 +115,35 @@ public class PauseManager : MonoBehaviour
         Cursor.visible = false;
     }
 
-    // ✅ NUEVO: Método para salir al menú principal
+    // ── CONFIGURACIÓN ─────────────────────────────────
+
+    public void AbrirConfiguracion()
+    {
+        if (botonesPrincipales != null) botonesPrincipales.SetActive(false);
+        if (panelConfiguracion != null) panelConfiguracion.SetActive(true);
+    }
+
+    public void RegresarDesdeConfiguracion()
+    {
+        if (botonesPrincipales != null) botonesPrincipales.SetActive(true);
+        if (panelConfiguracion != null) panelConfiguracion.SetActive(false);
+    }
+
+    private void ActualizarTextoSensibilidad(float valorSlider)
+    {
+        if (textoSensibilidad != null)
+        {
+            int porcentaje = Mathf.RoundToInt(valorSlider * 100f);
+            textoSensibilidad.text = $"Sensibilidad: {porcentaje}%";
+        }
+    }
+
     public void SalirAlMenuPrincipal()
     {
-        Time.timeScale = 1f; // ← CRÍTICO: Restaurar tiempo
+        Time.timeScale = 1f;
         JuegoPausado = false;
-
-        // Desbloquear cursor ANTES de cambiar escena
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-
-        SceneManager.LoadScene("MainMenu"); // ← Cambia por el nombre de tu escena de menú
+        SceneManager.LoadScene("MainMenu");
     }
 }

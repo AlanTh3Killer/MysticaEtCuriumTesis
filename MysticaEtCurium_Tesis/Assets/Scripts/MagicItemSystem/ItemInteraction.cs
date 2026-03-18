@@ -8,6 +8,7 @@ public class ItemInteraction : MonoBehaviour
 {
     [Header("UI de Inspección")]
     [SerializeField] private TextMeshProUGUI inspectionStatusText; // Texto que muestra características descubiertas
+    [SerializeField] private GameObject contenedorFeedbackUI; // ← E para depositar en contenedor
 
     [Header("Configuración")]
     [SerializeField] private Transform cameraTransform;
@@ -21,6 +22,7 @@ public class ItemInteraction : MonoBehaviour
     [SerializeField] private LayerMask itemLayer;
     [SerializeField] private LayerMask mesaLayer;
     [SerializeField] private LayerMask npcLayer;
+    [SerializeField] private LayerMask contenedorLayer;
 
     [Header("UI Feedback")]
     [SerializeField] private GameObject itemFeedbackUI;
@@ -43,6 +45,7 @@ public class ItemInteraction : MonoBehaviour
     [SerializeField] private KeyCode inputInspeccion = KeyCode.F;
     [SerializeField] private float distanciaMaximaMesa = 3f;        // ← para teleport
     [SerializeField] private float distanciaFeedbackMesa = 2f;      // ← NUEVO: para feedback visual
+    [SerializeField] private GameObject wasdFeedbackUI; // ← WASD alrededor del objeto
 
     [SerializeField] private Transform puntoDeInspeccion;
     [SerializeField] private float velocidadRotacion = 100f;
@@ -160,7 +163,7 @@ public class ItemInteraction : MonoBehaviour
         }
 
         // --- Retomar objeto desde inspección ---
-        if (Input.GetKeyDown(KeyCode.E) && objetoEnInspeccion && enModoInspeccion) 
+        if (Input.GetKeyDown(KeyCode.E) && objetoEnInspeccion && enModoInspeccion)
         {
             RecogerObjeto(objetoEnMesa, manoDerecha, ref itemEnManoDerecha);
             objetoEnMesa = null;
@@ -386,6 +389,15 @@ public class ItemInteraction : MonoBehaviour
             return;
         }
 
+        // CUARTA PASADA: Detectar contenedor
+        if (Physics.Raycast(ray, out hit, interactionDistance, contenedorLayer))
+        {
+            bool tieneItemParaDepositar = itemEnManoDerecha != null;
+            if (contenedorFeedbackUI != null)
+                contenedorFeedbackUI.SetActive(tieneItemParaDepositar);
+            return;
+        }
+
         // Si no detecta nada válido
         objetoDetectado = null;
         tagDetectado = "";
@@ -394,10 +406,12 @@ public class ItemInteraction : MonoBehaviour
         if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(false);
         if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(false);
         if (mesaTrabajoFeedbackUI != null) mesaTrabajoFeedbackUI.SetActive(false);
+        if (contenedorFeedbackUI != null) contenedorFeedbackUI.SetActive(false);
     }
 
     void ActualizarFeedbacksModoInspeccion()
     {
+
         if (enModoInspeccion)
         {
             // Mostrar F-salir perpetuamente en esquina superior
@@ -426,6 +440,10 @@ public class ItemInteraction : MonoBehaviour
                 // No hay objeto que colocar, apagar ese feedback
                 if (colocarEnMesaFeedbackUI != null)
                     colocarEnMesaFeedbackUI.SetActive(false);
+
+                // WASD siempre visible cuando hay objeto en mesa
+                if (wasdFeedbackUI != null)
+                    wasdFeedbackUI.SetActive(true);
             }
             else // No hay objeto en mesa todavía
             {
@@ -436,6 +454,10 @@ public class ItemInteraction : MonoBehaviour
                 // Mostrar click izquierdo solo si tiene item en mano
                 if (colocarEnMesaFeedbackUI != null)
                     colocarEnMesaFeedbackUI.SetActive(itemEnManoDerecha != null);
+
+                // Sin objeto en mesa, apagar WASD
+                if (wasdFeedbackUI != null)
+                    wasdFeedbackUI.SetActive(false);
             }
         }
         else // Fuera de modo inspección
@@ -444,6 +466,8 @@ public class ItemInteraction : MonoBehaviour
             if (usarHerramientaFeedbackUI != null) usarHerramientaFeedbackUI.SetActive(false);
             if (tomarObjetoInspeccionFeedbackUI != null) tomarObjetoInspeccionFeedbackUI.SetActive(false);
             if (colocarEnMesaFeedbackUI != null) colocarEnMesaFeedbackUI.SetActive(false);
+            if (wasdFeedbackUI != null) wasdFeedbackUI.SetActive(false);
+            if (contenedorFeedbackUI != null) contenedorFeedbackUI.SetActive(false);
         }
     }
 
