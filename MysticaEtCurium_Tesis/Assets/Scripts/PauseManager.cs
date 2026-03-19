@@ -5,6 +5,10 @@ using TMPro;
 
 public class PauseManager : MonoBehaviour
 {
+    // Agregar al inicio de PauseManager
+    public static int PrioridadActual = 0;
+    // 0 = nada, 1 = grimorio, 2 = pausa, 3 = panel final
+
     public static bool JuegoPausado = false;
 
     [Header("Referencias")]
@@ -68,6 +72,14 @@ public class PauseManager : MonoBehaviour
 
     public void PausarJuego()
     {
+        if (PrioridadActual > 2) return; // panel final tiene prioridad
+
+        // Cerrar grimorio si está abierto
+        if (PrioridadActual == 1)
+            GrimorioManager.Instance?.CerrarGrimorio(); // ← necesitas hacer CerrarGrimorio() público
+
+        PrioridadActual = 2;
+
         JuegoPausado = true;
         Time.timeScale = 0f;
 
@@ -95,6 +107,7 @@ public class PauseManager : MonoBehaviour
 
     public void ReanudarJuego()
     {
+        PrioridadActual = 0;
         JuegoPausado = false;
         Time.timeScale = 1f;
 

@@ -82,7 +82,9 @@ public class ItemInteraction : MonoBehaviour
 
     void Update()
     {
-        if (DialogueSystem.DialogoActivo)
+        // No procesar feedbacks si hay menú con prioridad activo
+        if (PauseManager.PrioridadActual > 0) return;
+        if (DialogueSystem.DialogoActivo || PauseManager.PrioridadActual > 0)
             return;
 
         // MODO INSPECCION
@@ -149,6 +151,10 @@ public class ItemInteraction : MonoBehaviour
                     objetoEnMesa = itemEnManoDerecha;
                     itemEnManoDerecha = null;
                     objetoEnInspeccion = true;
+
+                    // ← AGREGAR ESTO: reactivar collider para que el raycast lo detecte
+                    Collider col = objetoEnMesa.GetComponent<Collider>();
+                    if (col != null) col.enabled = true;
 
                     //  NUEVO: Iniciar tracking de inspección
                     MagicItemBehaviour magicItem = objetoEnMesa.GetComponent<MagicItemBehaviour>();
@@ -392,10 +398,15 @@ public class ItemInteraction : MonoBehaviour
         // CUARTA PASADA: Detectar contenedor
         if (Physics.Raycast(ray, out hit, interactionDistance, contenedorLayer))
         {
+            Debug.Log($"[Contenedor] Detectado: {hit.collider.name}"); // ← temporal
             bool tieneItemParaDepositar = itemEnManoDerecha != null;
             if (contenedorFeedbackUI != null)
                 contenedorFeedbackUI.SetActive(tieneItemParaDepositar);
             return;
+        }
+        else
+        {
+            Debug.Log("[Contenedor] Raycast no golpeó nada"); // ← temporal
         }
 
         // Si no detecta nada válido
@@ -424,14 +435,15 @@ public class ItemInteraction : MonoBehaviour
             if (objetoEnInspeccion)
             {
                 bool tieneHerramienta = herramientaEnManoIzquierda != null;
+                bool mirandoObjeto = JugadorMirandoObjetoEnMesa();
 
-                // Click derecho = usar herramienta
+                // Click derecho = usar herramienta SOLO si mira el objeto
                 if (usarHerramientaFeedbackUI != null)
-                    usarHerramientaFeedbackUI.SetActive(tieneHerramienta);
+                    usarHerramientaFeedbackUI.SetActive(tieneHerramienta && mirandoObjeto);
 
-                // E centrado = tomar objeto (solo si no tiene herramienta)
+                // E centrado = tomar objeto SOLO si mira el objeto y no tiene herramienta
                 if (tomarObjetoInspeccionFeedbackUI != null)
-                    tomarObjetoInspeccionFeedbackUI.SetActive(!tieneHerramienta);
+                    tomarObjetoInspeccionFeedbackUI.SetActive(!tieneHerramienta && mirandoObjeto);
 
                 // El feedback E normal siempre apagado en modo inspección
                 if (itemFeedbackUI != null)
@@ -442,8 +454,10 @@ public class ItemInteraction : MonoBehaviour
                     colocarEnMesaFeedbackUI.SetActive(false);
 
                 // WASD siempre visible cuando hay objeto en mesa
+                bool jugadorRotando = Mathf.Abs(Input.GetAxis("Horizontal")) > 0.1f ||
+                                  Mathf.Abs(Input.GetAxis("Vertical")) > 0.1f;
                 if (wasdFeedbackUI != null)
-                    wasdFeedbackUI.SetActive(true);
+                    wasdFeedbackUI.SetActive(!jugadorRotando);
             }
             else // No hay objeto en mesa todavía
             {
@@ -535,20 +549,20 @@ public class ItemInteraction : MonoBehaviour
             rb.useGravity = true;
             Debug.Log($"[ArrojarObjeto] Rigidbody configurado - isKinematic: {rb.isKinematic}, useGravity: {rb.useGravity}");
 
-            Vector3 direccionHorizontal = cameraTransform.forward;
-            direccionHorizontal.y = 0;
-            direccionHorizontal.Normalize();
-
-            direccionHorizontal += new Vector3(
+            Vector3 direccion = cameraTransform.forward;
+            direccion += new Vector3(
                 Random.Range(-0.05f, 0.05f),
-                Random.Range(0f, 0.1f),
+                Random.Range(0.1f, 0.3f),  // ← siempre un poco hacia arriba
                 Random.Range(-0.05f, 0.05f)
             );
+            direccion.Normalize();
 
-            rb.AddForce(direccionHorizontal.normalized * fuerzaArrojar, ForceMode.Impulse);
+            rb.AddForce(direccion * fuerzaArrojar, ForceMode.Impulse);
+
+            
             rb.AddTorque(Random.insideUnitSphere * 2f, ForceMode.Impulse);
 
-            Debug.Log($"[ArrojarObjeto] Fuerza aplicada: {direccionHorizontal.normalized * fuerzaArrojar}");
+            ;
 
             //  NUEVO: Agregar componente temporal que evita detección
             ThrownObjectMarker marker = obj.AddComponent<ThrownObjectMarker>();
@@ -746,6 +760,21 @@ public class ItemInteraction : MonoBehaviour
         if (item == null) return;
 
         tool.UseToolOnObject(item);
+    }
+
+    private bool JugadorMirandoObjetoEnMesa()
+    {
+        if (objetoEnMesa == null) return false;
+        Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
+        // Sin layer mask para detectar cualquier cosa, luego verificamos si es el objeto
+        RaycastHit[] hits = Physics.RaycastAll(ray, interactionDistance);
+        foreach (var hit in hits)
+        {
+            if (hit.collider.gameObject == objetoEnMesa ||
+                hit.collider.transform.IsChildOf(objetoEnMesa.transform))
+                return true;
+        }
+        return false;
     }
     #endregion
 

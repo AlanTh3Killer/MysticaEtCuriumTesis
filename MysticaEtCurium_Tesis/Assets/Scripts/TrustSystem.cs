@@ -179,6 +179,13 @@ public class TrustSystem : MonoBehaviour
 
     private IEnumerator MostrarPanelTemporal()
     {
+        // Cerrar lo que esté abierto
+        if (PauseManager.PrioridadActual == 1)
+            GrimorioManager.Instance?.CerrarGrimorio();
+        if (PauseManager.PrioridadActual == 2)
+            FindFirstObjectByType<PauseManager>()?.ReanudarJuego();
+
+        PauseManager.PrioridadActual = 3;
         mostrandoPanel = true;
 
         // Buscar scripts
@@ -210,6 +217,7 @@ public class TrustSystem : MonoBehaviour
 
         mostrandoPanel = false;
 
+        PauseManager.PrioridadActual = 0;
         Debug.Log("[TrustSystem] Panel ocultado. Jugador desbloqueado.");
     }
 

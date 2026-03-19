@@ -47,6 +47,7 @@ public class ItemSpawner : MonoBehaviour
         // Asignar data
         MagicItemBehaviour behaviour = currentItem.GetComponent<MagicItemBehaviour>();
         behaviour.data = data;
+        behaviour.inspectedCharacteristics.Clear(); // ← limpiar progreso previo
 
         //Reemplazar visual si existe customPrefab
         ReplaceVisual(currentItem, data);

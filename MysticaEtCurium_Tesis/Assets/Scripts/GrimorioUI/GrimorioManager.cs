@@ -94,6 +94,9 @@ public class GrimorioManager : MonoBehaviour
 
     void AbrirGrimorio()
     {
+        if (PauseManager.PrioridadActual > 1) return; // pausa o panel final tienen prioridad
+
+        PauseManager.PrioridadActual = 1;
         grimorioPanel.SetActive(true);
         grimorioActivo = true;
 
@@ -108,8 +111,9 @@ public class GrimorioManager : MonoBehaviour
         MostrarPestañaGrimorio();
     }
 
-    void CerrarGrimorio()
+    public void CerrarGrimorio()
     {
+        PauseManager.PrioridadActual = 0;
         grimorioPanel.SetActive(false);
         grimorioActivo = false;
 
