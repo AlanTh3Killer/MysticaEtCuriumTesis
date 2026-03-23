@@ -12,13 +12,19 @@ public class ContainerPlayerPrompt : MonoBehaviour
     {
         if (promptUI != null)
             promptUI.SetActive(false);
+
+        //// DEBUG: identificar dónde está este script
+        //Debug.Log($"[ContainerPlayerPrompt] Activo en: {gameObject.name} | Container: {(container != null ? container.name : "NULL")} | PromptUI: {(promptUI != null ? promptUI.name : "NULL")}", gameObject);
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log($"[ContainerPlayerPrompt] TriggerEnter con: {other.gameObject.name}, tag: {other.tag}", gameObject);
+
         if (other.CompareTag("Player"))
         {
             playerInteraction = other.GetComponent<ItemInteraction>();
+            Debug.Log($"[ContainerPlayerPrompt] Player detectado. ItemInteraction encontrado: {playerInteraction != null}", gameObject);
             if (playerInteraction != null)
             {
                 playerInRange = true;
@@ -57,12 +63,11 @@ public class ContainerPlayerPrompt : MonoBehaviour
             return;
         }
 
-        // Actualizar visibilidad del prompt constantemente
         bool hasItem = playerInteraction.HasItemInRightHand();
+        Debug.Log($"[ContainerPlayerPrompt] Update - playerInRange: {playerInRange}, hasItem: {hasItem}, promptActivo: {promptUI.activeSelf}", gameObject); // ← temporal
         if (promptUI != null)
             promptUI.SetActive(hasItem);
 
-        // Detectar input para depositar
         if (Input.GetKeyDown(KeyCode.E) && hasItem)
         {
             playerInteraction.DepositHeldItemIntoContainer(container);

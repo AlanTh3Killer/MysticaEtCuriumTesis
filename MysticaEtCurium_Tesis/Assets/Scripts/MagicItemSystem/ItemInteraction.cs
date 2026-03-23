@@ -395,19 +395,7 @@ public class ItemInteraction : MonoBehaviour
             return;
         }
 
-        // CUARTA PASADA: Detectar contenedor
-        if (Physics.Raycast(ray, out hit, interactionDistance, contenedorLayer))
-        {
-            Debug.Log($"[Contenedor] Detectado: {hit.collider.name}"); // ← temporal
-            bool tieneItemParaDepositar = itemEnManoDerecha != null;
-            if (contenedorFeedbackUI != null)
-                contenedorFeedbackUI.SetActive(tieneItemParaDepositar);
-            return;
-        }
-        else
-        {
-            Debug.Log("[Contenedor] Raycast no golpeó nada"); // ← temporal
-        }
+        
 
         // Si no detecta nada válido
         objetoDetectado = null;
@@ -417,7 +405,7 @@ public class ItemInteraction : MonoBehaviour
         if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(false);
         if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(false);
         if (mesaTrabajoFeedbackUI != null) mesaTrabajoFeedbackUI.SetActive(false);
-        if (contenedorFeedbackUI != null) contenedorFeedbackUI.SetActive(false);
+        
     }
 
     void ActualizarFeedbacksModoInspeccion()
@@ -559,7 +547,6 @@ public class ItemInteraction : MonoBehaviour
 
             rb.AddForce(direccion * fuerzaArrojar, ForceMode.Impulse);
 
-            
             rb.AddTorque(Random.insideUnitSphere * 2f, ForceMode.Impulse);
 
             ;
