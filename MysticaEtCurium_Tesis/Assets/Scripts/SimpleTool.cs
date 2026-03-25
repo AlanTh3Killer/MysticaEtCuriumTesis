@@ -58,14 +58,14 @@ public class SimpleTool : MonoBehaviour
             ShowMessage(message);
 
             // FIX: Solo mostrar feedback en el OBJETO, no en la herramienta
-            if (FeedbackManager.Instance != null)
-            {
-                FeedbackManager.Instance.ShowDiscoveryFeedback(item.transform.position);
-                FeedbackManager.Instance.HighlightObject(item.gameObject, 0.3f);
-            }
+            //if (FeedbackManager.Instance != null)
+            //{
+            //    FeedbackManager.Instance.ShowDiscoveryFeedback(item.transform.position);
+            //    FeedbackManager.Instance.HighlightObject(item.gameObject, 0.3f);
+            //}
 
-            if (audioSource != null && discoverySound != null)
-                audioSource.PlayOneShot(discoverySound);
+            //if (audioSource != null && discoverySound != null)
+            //    audioSource.PlayOneShot(discoverySound);
         }
         else
         {

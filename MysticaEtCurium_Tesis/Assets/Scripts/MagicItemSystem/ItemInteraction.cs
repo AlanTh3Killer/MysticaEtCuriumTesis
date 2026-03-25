@@ -202,6 +202,15 @@ public class ItemInteraction : MonoBehaviour
         {
             if (itemEnManoDerecha == null && objetoDetectado != null && tagDetectado.StartsWith("Item"))
             {
+                // ← AGREGAR: si el objeto detectado es el que está en mesa, limpiar estado
+                if (objetoDetectado == objetoEnMesa)
+                {
+                    objetoEnMesa = null;
+                    objetoEnInspeccion = false;
+                    if (InspectionTracker.Instance != null)
+                        InspectionTracker.Instance.ClearInspection();
+                }
+
                 RecogerObjeto(objetoDetectado, manoDerecha, ref itemEnManoDerecha);
             }
             //  QUITAR ESTO - Ya no arroja con E
