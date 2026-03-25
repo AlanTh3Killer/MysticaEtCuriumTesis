@@ -29,6 +29,14 @@ public class PauseManager : MonoBehaviour
 
     private bool dialogoActivoAntesDePausa = false;
 
+    private void Awake()
+    {
+        // Reset al cargar la escena
+        PrioridadActual = 0;
+        JuegoPausado = false;
+        Time.timeScale = 1f;
+    }
+
     private void Start()
     {
         if (menuPausa != null) menuPausa.SetActive(false);
@@ -153,8 +161,10 @@ public class PauseManager : MonoBehaviour
 
     public void SalirAlMenuPrincipal()
     {
-        Time.timeScale = 1f;
+        // Reset de variables estáticas ANTES de cambiar escena
+        PrioridadActual = 0;
         JuegoPausado = false;
+        Time.timeScale = 1f;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         SceneManager.LoadScene("MainMenu");

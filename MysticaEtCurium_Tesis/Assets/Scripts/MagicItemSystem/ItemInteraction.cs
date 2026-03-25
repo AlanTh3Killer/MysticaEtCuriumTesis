@@ -171,6 +171,10 @@ public class ItemInteraction : MonoBehaviour
         // --- Retomar objeto desde inspección ---
         if (Input.GetKeyDown(KeyCode.E) && objetoEnInspeccion && enModoInspeccion)
         {
+            // ← AGREGAR: quitar parent antes de recoger
+            if (objetoEnMesa != null)
+                objetoEnMesa.transform.SetParent(null);
+
             RecogerObjeto(objetoEnMesa, manoDerecha, ref itemEnManoDerecha);
             objetoEnMesa = null;
             objetoEnInspeccion = false;
@@ -395,7 +399,7 @@ public class ItemInteraction : MonoBehaviour
             return;
         }
 
-        
+
 
         // Si no detecta nada válido
         objetoDetectado = null;
@@ -405,7 +409,7 @@ public class ItemInteraction : MonoBehaviour
         if (herramientaFeedbackUI != null) herramientaFeedbackUI.SetActive(false);
         if (iniciarInspeccionFeedbackUI != null) iniciarInspeccionFeedbackUI.SetActive(false);
         if (mesaTrabajoFeedbackUI != null) mesaTrabajoFeedbackUI.SetActive(false);
-        
+
     }
 
     void ActualizarFeedbacksModoInspeccion()
@@ -635,25 +639,18 @@ public class ItemInteraction : MonoBehaviour
         if (itemEnManoDerecha == null) return;
         if (container == null) return;
 
-        //  VALIDAR si se puede clasificar
+        // Ya no bloqueamos — solo mostramos advertencia si no ha inspeccionado suficiente
         if (InspectionTracker.Instance != null)
         {
             bool canClassify = InspectionTracker.Instance.CanClassify(out string reason);
-
-            if (!canClassify)
+            if (!canClassify && inspectionStatusText != null)
             {
-                Debug.LogWarning($"[ItemInteraction] No se puede clasificar: {reason}");
-                // Mostrar feedback visual al jugador
-                if (inspectionStatusText != null)
-                {
-                    inspectionStatusText.color = Color.red; // ← Texto rojo
-                    inspectionStatusText.fontSize = 24; // ← Más grande
-                    inspectionStatusText.text = $"⚠️ ¡ERROR!\n\n{reason}\n\nUsa las herramientas primero";
-
-                    CancelInvoke("ClearInspectionStatus");
-                    Invoke("ClearInspectionStatus", 3f); // ← Más tiempo visible
-                }
-                return;
+                inspectionStatusText.color = Color.yellow;
+                inspectionStatusText.fontSize = 20;
+                inspectionStatusText.text = $"⚠️ Pocas características identificadas\n{reason}";
+                CancelInvoke("ClearInspectionStatus");
+                Invoke("ClearInspectionStatus", 2f);
+                // No hacemos return — dejamos que continúe
             }
         }
 
@@ -676,9 +673,61 @@ public class ItemInteraction : MonoBehaviour
 
         container.ProcessItemManual(obj);
 
-        //  Limpiar tracking
         if (InspectionTracker.Instance != null)
             InspectionTracker.Instance.ClearInspection();
+
+        LimpiarEstadoMesa();
+
+        //if (itemEnManoDerecha == null) return;
+        //if (container == null) return;
+
+        //  VALIDAR si se puede clasificar
+        //if (InspectionTracker.Instance != null)
+        //{
+        //bool canClassify = InspectionTracker.Instance.CanClassify(out string reason);
+
+        //if (!canClassify)
+        //{
+        //Debug.LogWarning($"[ItemInteraction] No se puede clasificar: {reason}");
+        // Mostrar feedback visual al jugador
+        //if (inspectionStatusText != null)
+        //{
+        //inspectionStatusText.color = Color.red; // ← Texto rojo
+        //inspectionStatusText.fontSize = 24; // ← Más grande
+        //inspectionStatusText.text = $"⚠️ ¡ERROR!\n\n{reason}\n\nUsa las herramientas primero";
+
+        //  CancelInvoke("ClearInspectionStatus");
+        //    Invoke("ClearInspectionStatus", 3f); // ← Más tiempo visible
+        //  }
+        //    return;
+        //  }
+        //}
+
+        //GameObject obj = itemEnManoDerecha;
+        //itemEnManoDerecha = null;
+
+        //obj.transform.SetParent(null);
+
+        //Rigidbody rb = obj.GetComponent<Rigidbody>();
+        //if (rb != null)
+        //{
+        //  rb.isKinematic = false;
+        //    rb.useGravity = true;
+        //     rb.linearVelocity = Vector3.zero;
+        //     rb.angularVelocity = Vector3.zero;
+        //}
+
+        // obj.transform.position = container.transform.position + Vector3.up * 0.5f;
+        //obj.transform.rotation = Quaternion.identity;
+
+        //container.ProcessItemManual(obj);
+
+        //  Limpiar tracking
+        //if (InspectionTracker.Instance != null)
+        //  InspectionTracker.Instance.ClearInspection();
+
+        // ← AGREGAR:
+        //LimpiarEstadoMesa();
     }
 
     private void ClearInspectionStatus()
@@ -762,6 +811,20 @@ public class ItemInteraction : MonoBehaviour
                 return true;
         }
         return false;
+    }
+
+    public void LimpiarEstadoMesa()
+    {
+        objetoEnMesa = null;
+        objetoEnInspeccion = false;
+        itemEnManoDerecha = null;
+
+        // Limpiar hijos del puntoDeInspeccion por si quedó algo
+        if (puntoDeInspeccion != null)
+        {
+            foreach (Transform child in puntoDeInspeccion)
+                Destroy(child.gameObject);
+        }
     }
     #endregion
 
