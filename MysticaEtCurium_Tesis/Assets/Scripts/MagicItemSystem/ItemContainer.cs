@@ -4,6 +4,13 @@ using UnityEngine;
 
 public class ItemContainer : MonoBehaviour
 {
+    [Header("Magnetismo")]
+    [SerializeField] private float radioAtraccion = 1.5f;      // radio en que empieza a atraer
+    [SerializeField] private float fuerzaAtraccion = 8f;       // qué tan rápido se mueve
+    [SerializeField] private bool magnetismoActivo = true;
+    private List<Rigidbody> objetosAtrayendo = new List<Rigidbody>();
+
+
     [Header("Accepted classification")]
     public MagicItemDataSO.ItemClassification acceptedClassification;
 
@@ -24,6 +31,40 @@ public class ItemContainer : MonoBehaviour
     {
         spawner = FindFirstObjectByType<ItemSpawner>();
         trustSystem = FindFirstObjectByType<TrustSystem>();
+    }
+
+    private void Update()
+    {
+        if (!magnetismoActivo) return;
+
+        // Limpiar lista de nulos
+        objetosAtrayendo.RemoveAll(rb => rb == null);
+
+        // Buscar objetos cercanos
+        Collider[] cercanos = Physics.OverlapSphere(transform.position, radioAtraccion);
+        foreach (var col in cercanos)
+        {
+            // Solo atraer MagicItems que no estén siendo cargados por el jugador
+            MagicItemBehaviour item = col.GetComponent<MagicItemBehaviour>();
+            if (item == null) continue;
+
+            // Ignorar objetos recién arrojados
+            ThrownObjectMarker marker = col.GetComponent<ThrownObjectMarker>();
+            if (marker != null && marker.IsThrown) continue;
+
+            // Ignorar si está siendo cargado (tiene padre asignado)
+            if (col.transform.parent != null) continue;
+
+            Rigidbody rb = col.GetComponent<Rigidbody>();
+            if (rb == null) continue;
+
+            // Atraer hacia el centro del contenedor
+            Vector3 direccion = (transform.position - col.transform.position).normalized;
+            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, direccion * fuerzaAtraccion, Time.deltaTime * 5f);
+
+            if (!objetosAtrayendo.Contains(rb))
+                objetosAtrayendo.Add(rb);
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -165,5 +206,11 @@ public class ItemContainer : MonoBehaviour
         {
             spawner.NotifyItemDestroyed();
         }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, radioAtraccion);
     }
 }
