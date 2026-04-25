@@ -1,6 +1,7 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class TrustSystem : MonoBehaviour
@@ -219,6 +220,15 @@ public class TrustSystem : MonoBehaviour
 
         PauseManager.PrioridadActual = 0;
         Debug.Log("[TrustSystem] Panel ocultado. Jugador desbloqueado.");
+
+        // Al final del coroutine, antes de LoadScene:
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        Time.timeScale = 1f;
+        PauseManager.PrioridadActual = 0;
+        PauseManager.JuegoPausado = false;
+
+        SceneManager.LoadScene("MainMenu");
     }
 
     public int ObtenerPuntosActuales() => puntosActuales;
